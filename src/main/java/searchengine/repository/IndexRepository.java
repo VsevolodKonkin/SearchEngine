@@ -14,10 +14,5 @@ import java.util.List;
 @Repository
 public interface IndexRepository extends JpaRepository<Index, Long> {
 
-    @Transactional
-    @Query(value = "select * from search_index where search_index.lemma_id in :lemmas " +
-            "and search_index.page_id in :pages", nativeQuery = true)
-    List<Index> findByPageAndLemmas(@Param("lemmas") List<Lemma> lemmaList,
-                                         @Param("pages") List<Page> pages);
 
 }
