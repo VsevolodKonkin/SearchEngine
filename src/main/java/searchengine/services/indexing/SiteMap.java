@@ -2,13 +2,13 @@ package searchengine.services.indexing;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class SitemapNode {
-    private SitemapNode parent;
+public class SiteMap {
+    private SiteMap parent;
     private int depth;
     private final String url;
-    private final CopyOnWriteArrayList<SitemapNode> children;
+    private final CopyOnWriteArrayList<SiteMap> children;
 
-    public SitemapNode(String url) {
+    public SiteMap(String url) {
         this.url = url;
         this.depth = 0;
         this.parent = null;
@@ -23,8 +23,8 @@ public class SitemapNode {
         return result;
     }
 
-    public void addChild(SitemapNode element) {
-        SitemapNode root = getRootElement();
+    public void addChild(SiteMap element) {
+        SiteMap root = getRootElement();
         if (!root.contains(element.getUrl())) {
             element.setParent(this);
             children.add(element);
@@ -35,7 +35,7 @@ public class SitemapNode {
         if (this.url.equals(url)) {
             return true;
         }
-        for (SitemapNode child : children) {
+        for (SiteMap child : children) {
             if (child.contains(url))
                 return true;
         }
@@ -46,18 +46,18 @@ public class SitemapNode {
         return url;
     }
 
-    private void setParent(SitemapNode sitemapNode) {
+    private void setParent(SiteMap sitemapNode) {
         synchronized (this) {
             this.parent = sitemapNode;
             this.depth = calculateDepth();
         }
     }
 
-    public SitemapNode getRootElement() {
+    public SiteMap getRootElement() {
         return parent == null ? this : parent.getRootElement();
     }
 
-    public CopyOnWriteArrayList<SitemapNode> getChildren() {
+    public CopyOnWriteArrayList<SiteMap> getChildren() {
         return children;
 
     }

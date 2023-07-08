@@ -2,7 +2,6 @@ package searchengine.services.indexing;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import searchengine.SiteIndexing;
 import searchengine.dto.indexing.IndexingResponse;
 import searchengine.model.Site;
 import searchengine.model.enums.SiteStatus;
@@ -54,25 +53,21 @@ public class IndexingServiceImpl implements IndexingService{
                 threadPoolExecutor.shutdownNow();
                 site.setStatus(SiteStatus.FAILED);
                 siteRepository.save(site);
-
-//                Формат ответа в случае успеха:
-//                    'result': true
-//                Формат ответа в случае ошибки:
-//                    'result': false,
-//                        'error': "Индексация не запущена"
+                indexingResponse.setResult(true);
+                indexingResponse.setError("");
             }
+            indexingResponse.setResult(false);
+            indexingResponse.setError("Индексация не запущена");
         }
-
         return indexingResponse;
     }
 
     private boolean isStartIndexing(Site site) {
-
         siteRepository.deleteBySite(site);
         pageRepository.deleteBySite(site);
         site.setStatus(SiteStatus.INDEXING);
         siteRepository.save(site);
-        threadPoolExecutor.execute(new SiteIndexing(pageRepository, siteRepository, site));
+        threadPoolExecutor.execute(new SiteIndexing(pageRepository, site.getUrl(), site));
         site.setName(site.getName());
         site.setStatusTime(new Date());
         site.setStatus(SiteStatus.INDEXED);
