@@ -20,6 +20,6 @@ public interface PageRepository extends JpaRepository<Page, Long> {
     @Query(value = "DELETE FROM Page p WHERE p.site = :site", nativeQuery = true)
     void deleteBySite(@Param("site") Site site);
 
-    @Query(value = "SELECT FROM Page p WHERE p.site = :site", nativeQuery = true)
+    @Query(value = "SELECT FROM Page p WHERE p.path = :path", nativeQuery = true)
     Page getPage(@Param("path") String path);
 }

@@ -1,7 +1,7 @@
 package searchengine.services.indexing;
 
 
-import lombok.RequiredArgsConstructor;
+
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
