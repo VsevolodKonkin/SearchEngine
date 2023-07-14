@@ -1,6 +1,5 @@
 package searchengine.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -27,7 +26,7 @@ public class Page implements Serializable {
     @Column(columnDefinition = "MEDIUMTEXT", nullable = false)
     private String content;
     @OneToMany(mappedBy = "page", cascade = CascadeType.ALL)
-    private List<Index> indexes = new LinkedList<>();
+    private List<Index> indexList = new LinkedList<>();
 
     public Page(Site site, String path, int code, String content) {
         this.site = site;

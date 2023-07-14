@@ -32,18 +32,18 @@ public class Site implements Serializable {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "site", cascade = CascadeType.ALL)
     private List<Page> pages = new ArrayList<>();
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "site", cascade = CascadeType.ALL)
-    private List<Lemma> lemmas = new ArrayList<>();
+    private List<Lemma> lemma = new ArrayList<>();
 
     public Site(SiteStatus status, Date statusTime,
-                     String lastError, String url,
-                     String name, List<Page> pageModelList,
-                     List<Lemma> lemmaModelList) {
+                String lastError, String url,
+                String name, List<Page> pageModelList,
+                List<Lemma> lemmaModelList) {
         this.status = status;
         this.statusTime = statusTime;
         this.lastError = lastError;
         this.url = url;
         this.name = name;
         this.pages = pageModelList;
-        this.lemmas = lemmaModelList;
+        this.lemma = lemmaModelList;
     }
 }

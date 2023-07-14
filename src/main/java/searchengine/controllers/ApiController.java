@@ -24,13 +24,15 @@ public class ApiController {
     }
 
     @GetMapping("/startIndexing")
-    public IndexingResponse startIndexing() {
-        return indexingService.startIndexing();
+    public ResponseEntity<IndexingResponse> startIndexing(){
+        IndexingResponse indexingResponse = indexingService.startIndexing();
+        return ResponseEntity.ok(indexingResponse);
     }
 
 
     @GetMapping("/stopIndexing")
-    public IndexingResponse stopIndexing() {
-        return indexingService.stopIndexing();
+    public ResponseEntity<IndexingResponse> stopIndexing() {
+        IndexingResponse indexingResponse = indexingService.stopIndexing();
+        return ResponseEntity.ok(indexingResponse);
     }
 }
