@@ -3,7 +3,7 @@ package searchengine.services.indexing;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import searchengine.dto.indexing.IndexingResponse;
-import searchengine.model.Site;
+import searchengine.model.SiteModel;
 import searchengine.model.enums.SiteStatus;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
@@ -24,15 +24,15 @@ public class IndexingServiceImpl implements IndexingService{
     @Override
     public IndexingResponse startIndexing() {
         IndexingResponse indexingResponse = new IndexingResponse();
-        List<Site> siteList = siteRepository.findAll();
+        List<SiteModel> siteModelList = siteRepository.findAll();
         boolean isIndexing;
-        for (Site site : siteList) {
-            if (site.getStatus().equals(SiteStatus.INDEXING)) {
+        for (SiteModel siteModel : siteModelList) {
+            if (siteModel.getStatus().equals(SiteStatus.INDEXING)) {
                 indexingResponse.setResult(false);
                 indexingResponse.setError("Индексация уже запущена");
                 continue;
             }
-            isIndexing = isStartIndexing(site);
+            isIndexing = isStartIndexing(siteModel);
             if (isIndexing) {
                 indexingResponse.setResult(true);
                 indexingResponse.setError("");
@@ -47,12 +47,12 @@ public class IndexingServiceImpl implements IndexingService{
     @Override
     public IndexingResponse stopIndexing() {
         IndexingResponse indexingResponse = new IndexingResponse();
-        Iterable<Site> sites = siteRepository.findAll();
-        for (Site site : sites) {
-            if (isStartIndexing(site)) {
+        Iterable<SiteModel> sites = siteRepository.findAll();
+        for (SiteModel siteModel : sites) {
+            if (isStartIndexing(siteModel)) {
                 threadPoolExecutor.shutdownNow();
-                site.setStatus(SiteStatus.FAILED);
-                siteRepository.save(site);
+                siteModel.setStatus(SiteStatus.FAILED);
+                siteRepository.save(siteModel);
                 indexingResponse.setResult(true);
                 indexingResponse.setError("");
             }
@@ -62,16 +62,14 @@ public class IndexingServiceImpl implements IndexingService{
         return indexingResponse;
     }
 
-    private boolean isStartIndexing(Site site) {
-        siteRepository.deleteBySite(site);
-        pageRepository.deleteBySite(site);
-        site.setStatus(SiteStatus.INDEXING);
-        siteRepository.save(site);
-        threadPoolExecutor.execute(new SiteIndexing(pageRepository, site.getUrl(), site));
-        site.setName(site.getName());
-        site.setStatusTime(new Date());
-        site.setStatus(SiteStatus.INDEXED);
-        siteRepository.save(site);
+    private boolean isStartIndexing(SiteModel siteModel) {
+        siteModel.setStatus(SiteStatus.INDEXING);
+        siteRepository.save(siteModel);
+        threadPoolExecutor.execute(new SiteIndexing(pageRepository, siteModel.getUrl(), siteModel));
+        siteModel.setName(siteModel.getName());
+        siteModel.setStatusTime(new Date());
+        siteModel.setStatus(SiteStatus.INDEXED);
+        siteRepository.save(siteModel);
         return true;
     }
 }

@@ -18,7 +18,7 @@ public class Page implements Serializable {
     private long id;
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "site_id", nullable = false, referencedColumnName = "id")
-    private Site site;
+    private SiteModel site;
     @Column(columnDefinition = "TEXT", nullable = false)
     private String path;
     @Column(nullable = false)
@@ -28,7 +28,7 @@ public class Page implements Serializable {
     @OneToMany(mappedBy = "page", cascade = CascadeType.ALL)
     private List<Index> indexList = new LinkedList<>();
 
-    public Page(Site site, String path, int code, String content) {
+    public Page(SiteModel site, String path, int code, String content) {
         this.site = site;
         this.path = path;
         this.code = code;

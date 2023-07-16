@@ -7,7 +7,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Value;
 import searchengine.model.Page;
-import searchengine.model.Site;
+import searchengine.model.SiteModel;
 import searchengine.repository.PageRepository;
 
 import java.io.IOException;
@@ -24,14 +24,14 @@ public class SiteMapRecursiveAction extends RecursiveAction {
     private String referrer;
     private String url;
     private SiteMap siteMap;
-    private Site site;
+    private SiteModel siteModel;
     private PageRepository pageRepository;
 
-    public SiteMapRecursiveAction(String url, SiteMap siteMap, Site site,
+    public SiteMapRecursiveAction(String url, SiteMap siteMap, SiteModel siteModel,
                                   PageRepository pageRepository) {
         this.url = url;
         this.siteMap = siteMap;
-        this.site = site;
+        this.siteModel = siteModel;
         this.pageRepository = pageRepository;
     }
 
@@ -92,7 +92,7 @@ public class SiteMapRecursiveAction extends RecursiveAction {
             Connection.Response conResponse = Jsoup.connect(childUrl).timeout(5000).
                     userAgent(userAgent).referrer(referrer).
                     ignoreHttpErrors(true).ignoreContentType(true).execute();
-            page.setSite(site);
+            page.setSite(siteModel);
             page.setPath(path);
             page.setCode(conResponse.statusCode());
             page.setContent(conResponse.body());

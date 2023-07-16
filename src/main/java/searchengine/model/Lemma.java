@@ -19,7 +19,7 @@ public class Lemma implements Serializable {
     private long id;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "site_id", referencedColumnName = "id")
-    private Site site;
+    private SiteModel site;
     @OneToMany(mappedBy = "lemma", cascade = CascadeType.ALL)
     private List<Index> indexList = new ArrayList<>();
     @Column(columnDefinition = "VARCHAR(255)", nullable = false)
@@ -27,7 +27,7 @@ public class Lemma implements Serializable {
     @Column(nullable = false)
     private int frequency;
 
-    public Lemma(String lemma, int frequency, Site site) {
+    public Lemma(String lemma, int frequency, SiteModel site) {
         this.lemma = lemma;
         this.frequency = frequency;
         this.site = site;

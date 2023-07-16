@@ -14,7 +14,8 @@ import java.util.*;
 @Setter
 @Getter
 @NoArgsConstructor
-public class Site implements Serializable {
+@Table(name = "site")
+public class SiteModel implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
@@ -34,10 +35,10 @@ public class Site implements Serializable {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "site", cascade = CascadeType.ALL)
     private List<Lemma> lemma = new ArrayList<>();
 
-    public Site(SiteStatus status, Date statusTime,
-                String lastError, String url,
-                String name, List<Page> pageModelList,
-                List<Lemma> lemmaModelList) {
+    public SiteModel(SiteStatus status, Date statusTime,
+                     String lastError, String url,
+                     String name, List<Page> pageModelList,
+                     List<Lemma> lemmaModelList) {
         this.status = status;
         this.statusTime = statusTime;
         this.lastError = lastError;

@@ -5,11 +5,13 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import searchengine.model.Site;
+import searchengine.model.SiteModel;
 
 @Repository
-public interface SiteRepository extends JpaRepository<Site, Long> {
+public interface SiteRepository extends JpaRepository<SiteModel, Long> {
     @Modifying
-    @Query(value = "DELETE FROM Site s WHERE s = :site", nativeQuery = true)
-    void deleteBySite(@Param("site") Site site);
+    @Query(value = "DELETE FROM search_engine.Site WHERE search_engine.site = :site", nativeQuery = true)
+    void deleteBySite(@Param("site") SiteModel siteModel);
+    @Query(value = "SELECT * FROM search_engine.site WHERE (:url IS NULL OR url LIKE :url)", nativeQuery = true)
+    SiteModel findByUrl(String url);
 }

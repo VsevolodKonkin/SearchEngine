@@ -2,7 +2,7 @@ package searchengine.services.indexing;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import searchengine.model.Site;
+import searchengine.model.SiteModel;
 import searchengine.repository.PageRepository;
 import java.util.concurrent.ForkJoinPool;
 
@@ -11,7 +11,7 @@ public class SiteIndexing extends Thread {
 
     private final PageRepository pageRepository;
     private final String url;
-    private final Site site;
+    private final SiteModel siteModel;
     @Value("${user-agent}")
     private String userAgent;
     @Value("${referrer}")
@@ -21,7 +21,7 @@ public class SiteIndexing extends Thread {
     public void run() {
         SiteMap siteMap = new SiteMap(url);
         SiteMapRecursiveAction siteMapRecur = new SiteMapRecursiveAction(url, siteMap,
-                site, pageRepository);
+                siteModel, pageRepository);
         new ForkJoinPool().invoke(siteMapRecur);
     }
 }
