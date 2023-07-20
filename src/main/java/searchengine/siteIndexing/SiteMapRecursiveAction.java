@@ -1,11 +1,10 @@
-package searchengine.services.indexing;
+package searchengine.siteIndexing;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Value;
 import searchengine.model.Page;
 import searchengine.model.SiteModel;
 import searchengine.repository.PageRepository;
@@ -15,13 +14,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.RecursiveAction;
 import java.util.regex.Pattern;
+
 import static java.lang.Thread.sleep;
 
 public class SiteMapRecursiveAction extends RecursiveAction {
-    @Value("${user-agent}")
-    private String userAgent;
-    @Value("${referrer}")
-    private String referrer;
+//    @Value("${user-agent}")
+    private String userAgent = "Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) " +
+            "Gecko/20070725 Firefox/2.0.0.6";
+//    @Value("${referrer}")
+    private String referrer = "http://www.google.com";
     private String url;
     private SiteMap siteMap;
     private SiteModel siteModel;

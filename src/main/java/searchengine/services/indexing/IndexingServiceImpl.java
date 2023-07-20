@@ -7,6 +7,7 @@ import searchengine.model.SiteModel;
 import searchengine.model.enums.SiteStatus;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
+import searchengine.siteIndexing.SiteIndexing;
 
 import java.util.Date;
 import java.util.List;

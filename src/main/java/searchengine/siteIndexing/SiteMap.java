@@ -1,4 +1,4 @@
-package searchengine.services.indexing;
+package searchengine.siteIndexing;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
