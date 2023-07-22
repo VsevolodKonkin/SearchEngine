@@ -9,10 +9,10 @@ import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
 import searchengine.siteIndexing.SiteIndexing;
 
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -49,28 +49,53 @@ public class IndexingServiceImpl implements IndexingService{
     public IndexingResponse stopIndexing() {
         IndexingResponse indexingResponse = new IndexingResponse();
         Iterable<SiteModel> sites = siteRepository.findAll();
+        boolean isIndexing = false;
         for (SiteModel siteModel : sites) {
-            if (isStartIndexing(siteModel)) {
-                threadPoolExecutor.shutdownNow();
-                siteModel.setStatus(SiteStatus.FAILED);
-                siteRepository.save(siteModel);
-                indexingResponse.setResult(true);
-                indexingResponse.setError("");
+            if (siteModel.getStatus().equals(SiteStatus.INDEXING)) {
+                isIndexing = true;
+                break;
             }
+        }
+        if (threadPoolExecutor.getActiveCount() == 0 && !isIndexing) {
             indexingResponse.setResult(false);
             indexingResponse.setError("Индексация не запущена");
+        } else {
+            threadPoolExecutor.shutdownNow();
+            try {
+                threadPoolExecutor.awaitTermination(30, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            if (threadPoolExecutor.isShutdown()) {
+                for (SiteModel siteModel : sites) {
+                    if (siteModel.getStatus().equals(SiteStatus.INDEXING)) {
+                        siteModel.setStatus(SiteStatus.FAILED);
+                        siteModel.setLastError("Индексация остановлена пользователем");
+                        siteRepository.save(siteModel);
+                    }
+                }
+                indexingResponse.setResult(true);
+                indexingResponse.setError("");
+            } else {
+                indexingResponse.setResult(false);
+                indexingResponse.setError("Не удалось остановить индексацию");
+            }
         }
         return indexingResponse;
     }
 
     private boolean isStartIndexing(SiteModel siteModel) {
         siteModel.setStatus(SiteStatus.INDEXING);
+        siteModel.setLastError("");
         siteRepository.save(siteModel);
+        if (threadPoolExecutor.getActiveCount() == 0) {
+            threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(8);
+        }
         threadPoolExecutor.execute(new SiteIndexing(pageRepository, siteModel.getUrl(), siteModel));
-        siteModel.setName(siteModel.getName());
-        siteModel.setStatusTime(new Date());
-        siteModel.setStatus(SiteStatus.INDEXED);
-        siteRepository.save(siteModel);
+//          siteModel.setName(siteModel.getName());
+//        siteModel.setStatusTime(new Date());
+//        siteModel.setStatus(SiteStatus.INDEXED);
+//        siteRepository.save(siteModel);
         return true;
     }
 }

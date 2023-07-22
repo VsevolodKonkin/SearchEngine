@@ -43,18 +43,21 @@ public class SiteMapRecursiveAction extends RecursiveAction {
     @Override
     protected void compute() {
         try {
-            sleep(150);
-            Connection connection = Jsoup.connect(url).timeout(5000).
-                    userAgent(userAgent).referrer(referrer).
-                    ignoreHttpErrors(true).ignoreContentType(true);
-            Document doc = connection.get();
-            Elements elements = doc.select("body").select("a");
-            for (Element a : elements) {
-                String childUrl = a.absUrl("href");
-                if (isCorrectUrl(childUrl)) {
-                    childUrl = stripParams(childUrl);
-                    siteMap.addChild(new SiteMap(childUrl));
-                    runOneSiteIndexing(childUrl);
+            if (url != null) {
+                sleep(150);
+                Connection connection = Jsoup.connect(url).timeout(5000).
+                        userAgent(userAgent).referrer(referrer).
+                        ignoreHttpErrors(true).ignoreContentType(true);
+                Document doc = connection.get();
+                Elements elements = doc.select("body").select("a");
+                for (Element a : elements) {
+                    String childUrl = a.absUrl("href");
+                    if (isCorrectUrl(childUrl)) {
+                        childUrl = stripParams(childUrl);
+                        siteMap.addChild(new SiteMap(childUrl));
+                        if (Thread.currentThread().isInterrupted()) break;
+                        runOneSiteIndexing(childUrl);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -103,6 +106,7 @@ public class SiteMapRecursiveAction extends RecursiveAction {
             }
             pageRepository.save(page);
         } catch (IOException e) {
+            Thread.currentThread().interrupt();
             throw new RuntimeException(e);
         }
     }

@@ -6,6 +6,4 @@ import searchengine.model.Index;
 
 @Repository
 public interface IndexRepository extends JpaRepository<Index, Long> {
-
-
 }
