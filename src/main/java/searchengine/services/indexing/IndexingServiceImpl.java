@@ -3,8 +3,11 @@ package searchengine.services.indexing;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import searchengine.dto.indexing.IndexingResponse;
+import searchengine.model.Index;
+import searchengine.model.Page;
 import searchengine.model.SiteModel;
 import searchengine.model.enums.SiteStatus;
+import searchengine.repository.IndexRepository;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
 import searchengine.siteIndexing.SiteIndexing;
@@ -20,6 +23,7 @@ public class IndexingServiceImpl implements IndexingService{
     ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(8);
     private final SiteRepository siteRepository;
     private final PageRepository pageRepository;
+    private final IndexRepository indexRepository;
 
 
     @Override
@@ -79,6 +83,27 @@ public class IndexingServiceImpl implements IndexingService{
             } else {
                 indexingResponse.setResult(false);
                 indexingResponse.setError("Не удалось остановить индексацию");
+            }
+        }
+        return indexingResponse;
+    }
+
+    @Override
+    public IndexingResponse indexPage(String url) {
+        IndexingResponse indexingResponse = new IndexingResponse();
+        Iterable<Page> pages = pageRepository.findAll();
+        for (Page page : pages) {
+            if (url.equals(page.getPath())) {
+                // Запустить переиндексацию страницы
+                Index index = new Index();
+                index.setPage(page);
+                indexRepository.save(index);
+                indexingResponse.setResult(true);
+                indexingResponse.setError("");
+            } else {
+                indexingResponse.setResult(false);
+                indexingResponse.setError("Данная страница находится за пределами сайтов, " +
+                        "указанных в конфигурационном файле");
             }
         }
         return indexingResponse;
