@@ -3,6 +3,7 @@ package searchengine.services.indexing;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import searchengine.dto.indexing.IndexingResponse;
+import searchengine.lemma.LemmaFinder;
 import searchengine.model.Index;
 import searchengine.model.Page;
 import searchengine.model.SiteModel;
@@ -91,10 +92,15 @@ public class IndexingServiceImpl implements IndexingService{
     @Override
     public IndexingResponse indexPage(String url) {
         IndexingResponse indexingResponse = new IndexingResponse();
+        LemmaFinder lemmaFinder = new LemmaFinder();
         Iterable<Page> pages = pageRepository.findAll();
         for (Page page : pages) {
             if (url.equals(page.getPath())) {
-                // Запустить переиндексацию страницы
+                String deletedTeg = lemmaFinder.removeHtmlTags(page.getContent());
+                lemmaFinder.collectLemmas(deletedTeg);
+
+                 //сохранить эту информацию в таблицы lemma и index базы данных
+
                 Index index = new Index();
                 index.setPage(page);
                 indexRepository.save(index);

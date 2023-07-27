@@ -6,6 +6,8 @@ import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 public class LemmaFinder {
@@ -22,7 +24,7 @@ public class LemmaFinder {
         this.luceneMorphology = luceneMorphology;
     }
 
-    private LemmaFinder(){
+    public LemmaFinder(){
         throw new RuntimeException("Disallow construct");
     }
 
@@ -111,5 +113,18 @@ public class LemmaFinder {
             }
         }
         return true;
+    }
+
+    public  String removeHtmlTags(String htmlText) {
+        Pattern htmlTagPattern = Pattern.compile("<[^>]*>");
+        StringBuilder cleanedText = new StringBuilder();
+        Matcher matcher = htmlTagPattern.matcher(htmlText);
+        int lastEnd = 0;
+        while (matcher.find()) {
+            cleanedText.append(htmlText, lastEnd, matcher.start());
+            lastEnd = matcher.end();
+        }
+        cleanedText.append(htmlText, lastEnd, htmlText.length());
+        return cleanedText.toString();
     }
 }
