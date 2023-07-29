@@ -20,7 +20,7 @@ public class Index implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lemma_id", referencedColumnName = "id")
     private Lemma lemma;
-    @Column(nullable = false)
+    @Column(columnDefinition = "FLOAT", name = "rank_number", nullable = false)
     private float rank;
 
     public Index(Page page, Lemma lemma, float rank) {

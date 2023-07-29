@@ -3,12 +3,10 @@ package searchengine.services.indexing;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import searchengine.dto.indexing.IndexingResponse;
-import searchengine.lemma.LemmaFinder;
-import searchengine.model.Index;
-import searchengine.model.Page;
 import searchengine.model.SiteModel;
 import searchengine.model.enums.SiteStatus;
 import searchengine.repository.IndexRepository;
+import searchengine.repository.LemmaRepository;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
 import searchengine.siteIndexing.SiteIndexing;
@@ -25,6 +23,7 @@ public class IndexingServiceImpl implements IndexingService{
     private final SiteRepository siteRepository;
     private final PageRepository pageRepository;
     private final IndexRepository indexRepository;
+    private final LemmaRepository lemmaRepository;
 
 
     @Override
@@ -92,25 +91,32 @@ public class IndexingServiceImpl implements IndexingService{
     @Override
     public IndexingResponse indexPage(String url) {
         IndexingResponse indexingResponse = new IndexingResponse();
-        LemmaFinder lemmaFinder = new LemmaFinder();
-        Iterable<Page> pages = pageRepository.findAll();
-        for (Page page : pages) {
-            if (url.equals(page.getPath())) {
-                String deletedTeg = lemmaFinder.removeHtmlTags(page.getContent());
-                lemmaFinder.collectLemmas(deletedTeg);
-
-                 //сохранить эту информацию в таблицы lemma и index базы данных
-
-                Index index = new Index();
-                index.setPage(page);
-                indexRepository.save(index);
-                indexingResponse.setResult(true);
-                indexingResponse.setError("");
-            } else {
-                indexingResponse.setResult(false);
-                indexingResponse.setError("Данная страница находится за пределами сайтов, " +
-                        "указанных в конфигурационном файле");
+//        LemmaFinder lemmaFinder = new LemmaFinder();
+//        Iterable<Page> pages = pageRepository.findAll();
+        Iterable<SiteModel> sites = siteRepository.findAll();
+        String siteString = "";
+        SiteStatus siteStatus = null;
+        SiteModel siteModel = null;
+        for (SiteModel site : sites) {
+            if (url.contains(site.getUrl())) {
+                siteString = site.getUrl();
+                siteStatus = site.getStatus();
+                siteModel = site;
             }
+        }
+        if (siteString.isBlank()) {
+            indexingResponse.setResult(false);
+            indexingResponse.setError("Данная страница находится за пределами сайтов, " +
+                    "указанных в конфигурационном файле");
+        } else if (siteStatus.equals(SiteStatus.INDEXING)) {
+            indexingResponse.setResult(false);
+            indexingResponse.setError("Данная страница уже индексируется");
+        } else {
+            SiteIndexing siteIndexing = new SiteIndexing(pageRepository, url, siteModel,
+                    indexRepository, lemmaRepository, siteRepository);
+            threadPoolExecutor.execute(siteIndexing);
+            indexingResponse.setResult(true);
+            indexingResponse.setError("");
         }
         return indexingResponse;
     }
@@ -122,11 +128,10 @@ public class IndexingServiceImpl implements IndexingService{
         if (threadPoolExecutor.getActiveCount() == 0) {
             threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(8);
         }
-        threadPoolExecutor.execute(new SiteIndexing(pageRepository, siteModel.getUrl(), siteModel));
-//          siteModel.setName(siteModel.getName());
-//        siteModel.setStatusTime(new Date());
-//        siteModel.setStatus(SiteStatus.INDEXED);
-//        siteRepository.save(siteModel);
+        threadPoolExecutor.execute(new SiteIndexing(pageRepository, siteModel.getUrl(), siteModel,
+                indexRepository, lemmaRepository, siteRepository));
+          siteModel.setName(siteModel.getName());
+          siteRepository.save(siteModel);
         return true;
     }
 }

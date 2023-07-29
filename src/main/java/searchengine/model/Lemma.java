@@ -6,7 +6,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 @Entity
@@ -21,7 +21,7 @@ public class Lemma implements Serializable {
     @JoinColumn(name = "site_id", referencedColumnName = "id")
     private SiteModel site;
     @OneToMany(mappedBy = "lemma", cascade = CascadeType.ALL)
-    private List<Index> indexList = new ArrayList<>();
+    private List<Index> indexList = new LinkedList<>();
     @Column(columnDefinition = "VARCHAR(255)", nullable = false)
     private String lemma;
     @Column(nullable = false)
