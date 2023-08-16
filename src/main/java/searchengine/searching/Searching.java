@@ -1,14 +1,13 @@
 package searchengine.searching;
 
 import lombok.RequiredArgsConstructor;
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
+import org.springframework.stereotype.Component;
 import searchengine.dto.search.DetailedSearchData;
 import searchengine.dto.search.SearchData;
 import searchengine.lemma.LemmaFinder;
 import searchengine.model.Index;
 import searchengine.model.Lemma;
+import searchengine.model.Page;
 import searchengine.model.SiteModel;
 import searchengine.repository.IndexRepository;
 import searchengine.repository.LemmaRepository;
@@ -17,7 +16,7 @@ import searchengine.repository.SiteRepository;
 
 import java.io.IOException;
 import java.util.*;
-
+@Component
 @RequiredArgsConstructor
 public class Searching {
     private final IndexRepository indexRepository;
@@ -40,8 +39,13 @@ public class Searching {
             DetailedSearchData data = getDetailedSearchData(query, site);
             detailedSearchData.add(data);
         }
-
-
+        detailedSearchData.sort(Comparator.comparing(DetailedSearchData::getRelevance));
+        if (limit == 0) {
+            int defaultLimit = 19;
+            detailedSearchData = detailedSearchData.subList(offset, Math.min(defaultLimit, detailedSearchData.size()));
+        } else {
+            detailedSearchData = detailedSearchData.subList(offset, Math.min(limit, detailedSearchData.size()));
+        }
         searchData.setListData(detailedSearchData);
         return searchData;
     }
@@ -50,7 +54,7 @@ public class Searching {
         DetailedSearchData detSearchData = new DetailedSearchData();
         detSearchData.setSite(site.getUrl());
         detSearchData.setSiteName(site.getName());
-        detSearchData.setSnippet(getSnippet(query, site.getUrl()));
+        detSearchData.setSnippet(getSnippet(query, site));
         detSearchData.setRelevance(getRelevance(query, site));
         return detSearchData;
     }
@@ -105,32 +109,43 @@ public class Searching {
         }
     }
 
-    private String getSnippet(String query, String url) {
+    private String getSnippet(String query, SiteModel site) {
         try {
-            String pageContent = getPageContent(url);
-            String highlightedContent = highlightQueryMatches(pageContent, query);
-            String snippet = limitSnippetLength(highlightedContent);
-            return snippet;
+            LemmaFinder lemmaFinder = LemmaFinder.getInstance();
+            Set<String> filteredLemmas = lemmaFinder.getLemmaSet(query);
+            List<Lemma> lemmaList = new ArrayList<>();
+            for (String lemma : filteredLemmas) {
+                Lemma lemmaModel = lemmaRepository.findLemma(lemma);
+                lemmaList.add(lemmaModel);
+            }
+            List<Index> indexList = new ArrayList<>();
+            for (Lemma lemma : lemmaList) {
+                Index indexLemma = indexRepository.findByLemmaId(lemma.getId());
+                indexList.add(indexLemma);
+            }
+            List<Page> pageList = new ArrayList<>();
+            for (Index id : indexList) {
+                Page page = id.getPage();
+                pageList.add(page);
+            }
+            StringBuilder snippet = new StringBuilder();
+            for (Page page : pageList) {
+                String highlightedContent = highlightQueryMatches(page.getContent(), query);
+                snippet.append(limitSnippetLength(highlightedContent));
+            }
+
+            return snippet.toString();
         } catch (IOException e) {
             throw new RuntimeException("Failed to fetch webpage content " + e);
         }
     }
 
-    private String getPageContent(String url) throws IOException {
-        Connection connection = Jsoup.connect(url);
-        Document document = connection.get();
-        String content = document.text();
-        return content;
-    }
-
     private String highlightQueryMatches(String content, String query) {
-        String highlightedContent = content.replaceAll(query, "<b>$0</b>");
-        return highlightedContent;
+        return content.replaceAll(query, "<b>$0</b>");
     }
 
     private String limitSnippetLength(String content) {
         int maxSnippetLength = 300;
-        String snippet = content.substring(0, Math.min(content.length(), maxSnippetLength));
-        return snippet;
+        return content.substring(0, Math.min(content.length(), maxSnippetLength));
     }
 }

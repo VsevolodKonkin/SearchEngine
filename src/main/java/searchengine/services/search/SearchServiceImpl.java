@@ -1,14 +1,14 @@
 package searchengine.services.search;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import searchengine.dto.search.SearchResponse;
 import searchengine.searching.Searching;
-
+@Service
+@RequiredArgsConstructor
 public class SearchServiceImpl implements SearchService{
-    private final Searching searching;
 
-    public SearchServiceImpl(Searching searching) {
-        this.searching = searching;
-    }
+    private final Searching searching;
 
     @Override
     public SearchResponse getData(String query, String url, int offset, int limit) {
