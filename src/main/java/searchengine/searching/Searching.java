@@ -11,7 +11,6 @@ import searchengine.model.Page;
 import searchengine.model.SiteModel;
 import searchengine.repository.IndexRepository;
 import searchengine.repository.LemmaRepository;
-import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
 
 import java.io.IOException;
@@ -21,24 +20,14 @@ import java.util.*;
 public class Searching {
     private final IndexRepository indexRepository;
     private final LemmaRepository lemmaRepository;
-    private final PageRepository pageRepository;
     private final SiteRepository siteRepository;
 
     List<DetailedSearchData> detailedSearchData = new ArrayList<>();
 
     public SearchData getData(String query, String url, int offset, int limit) {
         SearchData searchData = new SearchData();
-        List<SiteModel> listSites;
-        if (url == null) {
-            listSites = siteRepository.findAll();
-        } else {
-            SiteModel site = siteRepository.findByUrl(url);
-            listSites = new ArrayList<>(Collections.singletonList(site));
-        }
-        for (SiteModel site : listSites) {
-            DetailedSearchData data = getDetailedSearchData(query, site);
-            detailedSearchData.add(data);
-        }
+        DetailedSearchData data = getDetailedSearchData(query, url);
+        detailedSearchData.add(data);
         detailedSearchData.sort(Comparator.comparing(DetailedSearchData::getRelevance));
         if (limit == 0) {
             int defaultLimit = 19;
@@ -50,12 +39,21 @@ public class Searching {
         return searchData;
     }
 
-    private DetailedSearchData getDetailedSearchData(String query, SiteModel site) {
+    private DetailedSearchData getDetailedSearchData(String query, String url) {
         DetailedSearchData detSearchData = new DetailedSearchData();
-        detSearchData.setSite(site.getUrl());
-        detSearchData.setSiteName(site.getName());
-        detSearchData.setSnippet(getSnippet(query, site));
-        detSearchData.setRelevance(getRelevance(query, site));
+        List<SiteModel> listSites;
+        if (url == null || url.equals("")) {
+            listSites = siteRepository.findAll();
+        } else {
+            SiteModel siteModel = siteRepository.findByUrl(url);
+            listSites = new ArrayList<>(Collections.singletonList(siteModel));
+        }
+        for (SiteModel siteEntity : listSites) {
+            detSearchData.setSite(siteEntity.getUrl());
+            detSearchData.setSiteName(siteEntity.getName());
+            detSearchData.setSnippet(getSnippet(query));
+            detSearchData.setRelevance(getRelevance(query, siteEntity));
+        }
         return detSearchData;
     }
 
@@ -63,8 +61,8 @@ public class Searching {
         try {
             LemmaFinder lemmaFinder = LemmaFinder.getInstance();
             Set<String> filteredLemmas = lemmaFinder.getLemmaSet(query);
-
             List<String> sortedLemmas = new ArrayList<>(filteredLemmas);
+
             sortedLemmas.sort(Comparator.comparingInt(lemma -> {
                 Lemma lemmaModel = lemmaRepository.findLemma(lemma);
                 return lemmaModel != null ? lemmaModel.getFrequency() : Integer.MAX_VALUE;
@@ -109,7 +107,7 @@ public class Searching {
         }
     }
 
-    private String getSnippet(String query, SiteModel site) {
+    private String getSnippet(String query) {
         try {
             LemmaFinder lemmaFinder = LemmaFinder.getInstance();
             Set<String> filteredLemmas = lemmaFinder.getLemmaSet(query);
@@ -120,8 +118,13 @@ public class Searching {
             }
             List<Index> indexList = new ArrayList<>();
             for (Lemma lemma : lemmaList) {
-                Index indexLemma = indexRepository.findByLemmaId(lemma.getId());
-                indexList.add(indexLemma);
+                if (lemma != null) {
+                    Index indexLemma = indexRepository.findByLemmaId(lemma.getId());
+                    indexList.add(indexLemma);
+                }
+                /**
+                 * если не найдено совпадений, то ...
+                 */
             }
             List<Page> pageList = new ArrayList<>();
             for (Index id : indexList) {
