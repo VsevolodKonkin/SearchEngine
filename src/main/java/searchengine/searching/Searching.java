@@ -1,6 +1,7 @@
 package searchengine.searching;
 
 import lombok.RequiredArgsConstructor;
+import org.jsoup.Jsoup;
 import org.springframework.stereotype.Component;
 import searchengine.dto.search.DetailedSearchData;
 import searchengine.dto.search.SearchData;
@@ -35,6 +36,7 @@ public class Searching {
         } else {
             detailedSearchData = detailedSearchData.subList(offset, Math.min(limit, detailedSearchData.size()));
         }
+        detailedSearchData.removeIf(dataResult -> dataResult.getRelevance() == 0.0);
         searchData.setListData(detailedSearchData);
         return searchData;
     }
@@ -42,7 +44,7 @@ public class Searching {
     private DetailedSearchData getDetailedSearchData(String query, String url) {
         DetailedSearchData detSearchData = new DetailedSearchData();
         List<SiteModel> listSites;
-        if (url == null || url.equals("")) {
+        if (url == null || url.isBlank()) { // доделать
             listSites = siteRepository.findAll();
         } else {
             SiteModel siteModel = siteRepository.findByUrl(url);
@@ -54,6 +56,7 @@ public class Searching {
             detSearchData.setSnippet(getSnippet(query));
             detSearchData.setRelevance(getRelevance(query, siteEntity));
         }
+
         return detSearchData;
     }
 
@@ -99,8 +102,8 @@ public class Searching {
             if (maxRelevance == 0.0) {
                 return 0.0;
             }
-
-            return totalRelevance / maxRelevance;
+            double relevance = totalRelevance / maxRelevance * 10000;
+            return relevance;
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -122,9 +125,6 @@ public class Searching {
                     Index indexLemma = indexRepository.findByLemmaId(lemma.getId());
                     indexList.add(indexLemma);
                 }
-                /**
-                 * если не найдено совпадений, то ...
-                 */
             }
             List<Page> pageList = new ArrayList<>();
             for (Index id : indexList) {
@@ -133,18 +133,13 @@ public class Searching {
             }
             StringBuilder snippet = new StringBuilder();
             for (Page page : pageList) {
-                String highlightedContent = highlightQueryMatches(page.getContent(), query);
-                snippet.append(limitSnippetLength(highlightedContent));
+                String text = Jsoup.parse(page.getContent()).text();
+                snippet.append(limitSnippetLength(text));
             }
-
-            return snippet.toString();
+            return snippet.toString().replaceAll(query, "<b>$0</b>");
         } catch (IOException e) {
             throw new RuntimeException("Failed to fetch webpage content " + e);
         }
-    }
-
-    private String highlightQueryMatches(String content, String query) {
-        return content.replaceAll(query, "<b>$0</b>");
     }
 
     private String limitSnippetLength(String content) {
