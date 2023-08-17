@@ -91,8 +91,6 @@ public class IndexingServiceImpl implements IndexingService{
     @Override
     public IndexingResponse indexPage(String url) {
         IndexingResponse indexingResponse = new IndexingResponse();
-//        LemmaFinder lemmaFinder = new LemmaFinder();
-//        Iterable<Page> pages = pageRepository.findAll();
         Iterable<SiteModel> sites = siteRepository.findAll();
         String siteString = "";
         SiteStatus siteStatus = null;
