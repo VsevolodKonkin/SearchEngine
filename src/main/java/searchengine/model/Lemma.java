@@ -26,10 +26,4 @@ public class Lemma implements Serializable {
     private String lemma;
     @Column(nullable = false)
     private int frequency;
-
-    public Lemma(String lemma, int frequency, SiteModel site) {
-        this.lemma = lemma;
-        this.frequency = frequency;
-        this.site = site;
-    }
 }

@@ -1,5 +1,6 @@
 package searchengine.siteIndexing;
 
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -15,6 +16,8 @@ import searchengine.repository.IndexRepository;
 import searchengine.repository.LemmaRepository;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,7 +28,7 @@ import java.util.concurrent.RecursiveAction;
 import java.util.regex.Pattern;
 
 import static java.lang.Thread.sleep;
-
+@Slf4j
 public class SiteMapRecursiveAction extends RecursiveAction {
 //    @Value("${user-agent}")
     private String userAgent = "Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) " +
@@ -78,6 +81,7 @@ public class SiteMapRecursiveAction extends RecursiveAction {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            log.error("An error occurred:", e);
         }
 
         List<SiteMapRecursiveAction> tasks = new ArrayList<>();
@@ -131,6 +135,7 @@ public class SiteMapRecursiveAction extends RecursiveAction {
         } catch (IOException e) {
             Thread.currentThread().interrupt();
             siteModel.setLastError("Ошибка чтения страницы: " + childUrl);
+            log.error("An error occurred:", e);
             throw new RuntimeException(e);
         } finally {
             siteRepository.save(siteModel);

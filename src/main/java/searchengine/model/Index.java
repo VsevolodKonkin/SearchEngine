@@ -22,10 +22,4 @@ public class Index implements Serializable {
     private Lemma lemma;
     @Column(columnDefinition = "FLOAT", name = "rank_number", nullable = false)
     private float rank;
-
-    public Index(Page page, Lemma lemma, float rank) {
-        this.page = page;
-        this.lemma = lemma;
-        this.rank = rank;
-    }
 }

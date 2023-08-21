@@ -1,0 +1,171 @@
+2023-08-21 18:16:33.018  INFO 43784 --- [main] searchengine.Application                 : Starting Application using Java 19.0.1 on MacBook-Pro.local with PID 43784 (/Users/user/IdeaProjects/diplom/searchengine/target/classes started by user in /Users/user/IdeaProjects/diplom/searchengine)
+2023-08-21 18:16:33.020  INFO 43784 --- [main] searchengine.Application                 : No active profile set, falling back to 1 default profile: "default"
+2023-08-21 18:16:34.628  INFO 43784 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2023-08-21 18:16:34.751  INFO 43784 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 113 ms. Found 4 JPA repository interfaces.
+2023-08-21 18:16:36.201  INFO 43784 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2023-08-21 18:16:36.217  INFO 43784 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2023-08-21 18:16:36.218  INFO 43784 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.64]
+2023-08-21 18:16:36.380  INFO 43784 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2023-08-21 18:16:36.381  INFO 43784 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 3229 ms
+2023-08-21 18:16:36.744  INFO 43784 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2023-08-21 18:16:36.782  INFO 43784 --- [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.9.Final
+2023-08-21 18:16:36.928  INFO 43784 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2023-08-21 18:16:37.028  INFO 43784 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2023-08-21 18:16:37.390  INFO 43784 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2023-08-21 18:16:37.414  INFO 43784 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQL8Dialect
+2023-08-21 18:16:38.499  INFO 43784 --- [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2023-08-21 18:16:38.508  INFO 43784 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2023-08-21 18:16:39.617  WARN 43784 --- [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2023-08-21 18:16:40.141  INFO 43784 --- [main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page template: index
+2023-08-21 18:16:40.666  INFO 43784 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2023-08-21 18:16:40.688  INFO 43784 --- [main] searchengine.Application                 : Started Application in 8.546 seconds (JVM running for 9.579)
+2023-08-21 18:16:40.697  INFO 43784 --- [main] searchengine.Application                 : Application started successfully.
+2023-08-21 18:16:48.867  INFO 43784 --- [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2023-08-21 18:16:48.869  INFO 43784 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2023-08-21 18:16:48.876  INFO 43784 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 7 ms
+2023-08-21 18:18:29.156  INFO 43784 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2023-08-21 18:18:29.175  INFO 43784 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2023-08-21 18:18:29.198  INFO 43784 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2023-08-21 18:18:37.183  INFO 43979 --- [main] searchengine.Application                 : Starting Application using Java 19.0.1 on MacBook-Pro.local with PID 43979 (/Users/user/IdeaProjects/diplom/searchengine/target/classes started by user in /Users/user/IdeaProjects/diplom/searchengine)
+2023-08-21 18:18:37.188  INFO 43979 --- [main] searchengine.Application                 : No active profile set, falling back to 1 default profile: "default"
+2023-08-21 18:18:38.765  INFO 43979 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2023-08-21 18:18:38.888  INFO 43979 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 114 ms. Found 4 JPA repository interfaces.
+2023-08-21 18:18:40.324  INFO 43979 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2023-08-21 18:18:40.338  INFO 43979 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2023-08-21 18:18:40.338  INFO 43979 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.64]
+2023-08-21 18:18:40.522  INFO 43979 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2023-08-21 18:18:40.523  INFO 43979 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 3220 ms
+2023-08-21 18:18:40.824  INFO 43979 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2023-08-21 18:18:40.868  INFO 43979 --- [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.9.Final
+2023-08-21 18:18:41.076  INFO 43979 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2023-08-21 18:18:41.175  INFO 43979 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2023-08-21 18:18:41.445  INFO 43979 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2023-08-21 18:18:41.470  INFO 43979 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQL8Dialect
+2023-08-21 18:18:42.503  INFO 43979 --- [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2023-08-21 18:18:42.515  INFO 43979 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2023-08-21 18:18:43.518  WARN 43979 --- [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2023-08-21 18:18:44.128  INFO 43979 --- [main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page template: index
+2023-08-21 18:18:44.613  INFO 43979 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2023-08-21 18:18:44.644  INFO 43979 --- [main] searchengine.Application                 : Started Application in 8.412 seconds (JVM running for 9.468)
+2023-08-21 18:18:44.661  INFO 43979 --- [main] searchengine.Application                 : Application started successfully.
+2023-08-21 18:19:15.323  INFO 43979 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2023-08-21 18:19:15.331  INFO 43979 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2023-08-21 18:19:15.355  INFO 43979 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2023-08-21 18:59:50.897  INFO 47841 --- [main] searchengine.Application                 : Starting Application using Java 19.0.1 on MacBook-Pro.local with PID 47841 (/Users/user/IdeaProjects/diplom/searchengine/target/classes started by user in /Users/user/IdeaProjects/diplom/searchengine)
+2023-08-21 18:59:50.900  INFO 47841 --- [main] searchengine.Application                 : No active profile set, falling back to 1 default profile: "default"
+2023-08-21 18:59:52.468  INFO 47841 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2023-08-21 18:59:52.598  INFO 47841 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 120 ms. Found 4 JPA repository interfaces.
+2023-08-21 18:59:54.021  INFO 47841 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2023-08-21 18:59:54.037  INFO 47841 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2023-08-21 18:59:54.037  INFO 47841 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.64]
+2023-08-21 18:59:54.226  INFO 47841 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2023-08-21 18:59:54.227  INFO 47841 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 3140 ms
+2023-08-21 18:59:54.632  INFO 47841 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2023-08-21 18:59:54.690  INFO 47841 --- [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.9.Final
+2023-08-21 18:59:54.876  INFO 47841 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2023-08-21 18:59:54.966  INFO 47841 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2023-08-21 18:59:55.240  INFO 47841 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2023-08-21 18:59:55.260  INFO 47841 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQL8Dialect
+2023-08-21 18:59:56.414  INFO 47841 --- [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2023-08-21 18:59:56.423  INFO 47841 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2023-08-21 18:59:57.458  WARN 47841 --- [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2023-08-21 18:59:57.772  INFO 47841 --- [main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page template: index
+2023-08-21 18:59:58.682  INFO 47841 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2023-08-21 18:59:58.715  INFO 47841 --- [main] searchengine.Application                 : Started Application in 8.77 seconds (JVM running for 9.777)
+2023-08-21 18:59:58.724  INFO 47841 --- [main] searchengine.Application                 : Application started successfully.
+2023-08-21 19:01:00.952  INFO 47841 --- [http-nio-8080-exec-3] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2023-08-21 19:01:00.957  INFO 47841 --- [http-nio-8080-exec-3] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2023-08-21 19:01:00.976  INFO 47841 --- [http-nio-8080-exec-3] o.s.web.servlet.DispatcherServlet        : Completed initialization in 19 ms
+2023-08-21 19:06:17.098 ERROR 47841 --- [ForkJoinPool-1-worker-1] s.siteIndexing.SiteMapRecursiveAction    : An error occurred:
+
+java.net.UnknownHostException: playback.ru
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:560) ~[na:na]
+	at java.base/java.net.Socket.connect(Socket.java:666) ~[na:na]
+	at java.base/sun.net.NetworkClient.doConnect(NetworkClient.java:178) ~[na:na]
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:531) ~[na:na]
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:636) ~[na:na]
+	at java.base/sun.net.www.http.HttpClient.<init>(HttpClient.java:279) ~[na:na]
+	at java.base/sun.net.www.http.HttpClient.New(HttpClient.java:384) ~[na:na]
+	at java.base/sun.net.www.http.HttpClient.New(HttpClient.java:406) ~[na:na]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getNewHttpClient(HttpURLConnection.java:1308) ~[na:na]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(HttpURLConnection.java:1241) ~[na:na]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(HttpURLConnection.java:1127) ~[na:na]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.connect(HttpURLConnection.java:1056) ~[na:na]
+	at org.jsoup.helper.HttpConnection$Response.execute(HttpConnection.java:858) ~[jsoup-1.15.4.jar:1.15.4]
+	at org.jsoup.helper.HttpConnection$Response.execute(HttpConnection.java:828) ~[jsoup-1.15.4.jar:1.15.4]
+	at org.jsoup.helper.HttpConnection.execute(HttpConnection.java:365) ~[jsoup-1.15.4.jar:1.15.4]
+	at org.jsoup.helper.HttpConnection.get(HttpConnection.java:352) ~[jsoup-1.15.4.jar:1.15.4]
+	at searchengine.siteIndexing.SiteMapRecursiveAction.compute(SiteMapRecursiveAction.java:70) ~[classes/:na]
+	at java.base/java.util.concurrent.RecursiveAction.exec(RecursiveAction.java:194) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1311) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1840) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1806) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:177) ~[na:na]
+
+2023-08-21 19:07:12.205 ERROR 47841 --- [ForkJoinPool-2-worker-1] s.siteIndexing.SiteMapRecursiveAction    : An error occurred:
+
+java.net.UnknownHostException: oauth.vk.com
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:560) ~[na:na]
+	at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:327) ~[na:na]
+	at java.base/java.net.Socket.connect(Socket.java:666) ~[na:na]
+	at java.base/sun.security.ssl.SSLSocketImpl.connect(SSLSocketImpl.java:304) ~[na:na]
+	at java.base/sun.net.NetworkClient.doConnect(NetworkClient.java:178) ~[na:na]
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:531) ~[na:na]
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:636) ~[na:na]
+	at java.base/sun.net.www.protocol.https.HttpsClient.<init>(HttpsClient.java:264) ~[na:na]
+	at java.base/sun.net.www.protocol.https.HttpsClient.New(HttpsClient.java:378) ~[na:na]
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.getNewHttpClient(AbstractDelegateHttpsURLConnection.java:193) ~[na:na]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(HttpURLConnection.java:1241) ~[na:na]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(HttpURLConnection.java:1127) ~[na:na]
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:179) ~[na:na]
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.connect(HttpsURLConnectionImpl.java:142) ~[na:na]
+	at org.jsoup.helper.HttpConnection$Response.execute(HttpConnection.java:858) ~[jsoup-1.15.4.jar:1.15.4]
+	at org.jsoup.helper.HttpConnection$Response.execute(HttpConnection.java:886) ~[jsoup-1.15.4.jar:1.15.4]
+	at org.jsoup.helper.HttpConnection$Response.execute(HttpConnection.java:828) ~[jsoup-1.15.4.jar:1.15.4]
+	at org.jsoup.helper.HttpConnection.execute(HttpConnection.java:365) ~[jsoup-1.15.4.jar:1.15.4]
+	at searchengine.siteIndexing.SiteMapRecursiveAction.runOneSiteIndexing(SiteMapRecursiveAction.java:121) ~[classes/:na]
+	at searchengine.siteIndexing.SiteMapRecursiveAction.compute(SiteMapRecursiveAction.java:78) ~[classes/:na]
+	at java.base/java.util.concurrent.RecursiveAction.exec(RecursiveAction.java:194) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1311) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1840) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1806) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:177) ~[na:na]
+
+2023-08-21 19:07:12.251 ERROR 47841 --- [ForkJoinPool-2-worker-1] s.siteIndexing.SiteMapRecursiveAction    : An error occurred:
+
+java.lang.RuntimeException: java.net.UnknownHostException: oauth.vk.com
+	at searchengine.siteIndexing.SiteMapRecursiveAction.runOneSiteIndexing(SiteMapRecursiveAction.java:139) ~[classes/:na]
+	at searchengine.siteIndexing.SiteMapRecursiveAction.compute(SiteMapRecursiveAction.java:78) ~[classes/:na]
+	at java.base/java.util.concurrent.RecursiveAction.exec(RecursiveAction.java:194) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1311) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1840) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1806) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:177) ~[na:na]
+Caused by: java.net.UnknownHostException: oauth.vk.com
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:560) ~[na:na]
+	at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:327) ~[na:na]
+	at java.base/java.net.Socket.connect(Socket.java:666) ~[na:na]
+	at java.base/sun.security.ssl.SSLSocketImpl.connect(SSLSocketImpl.java:304) ~[na:na]
+	at java.base/sun.net.NetworkClient.doConnect(NetworkClient.java:178) ~[na:na]
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:531) ~[na:na]
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:636) ~[na:na]
+	at java.base/sun.net.www.protocol.https.HttpsClient.<init>(HttpsClient.java:264) ~[na:na]
+	at java.base/sun.net.www.protocol.https.HttpsClient.New(HttpsClient.java:378) ~[na:na]
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.getNewHttpClient(AbstractDelegateHttpsURLConnection.java:193) ~[na:na]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(HttpURLConnection.java:1241) ~[na:na]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(HttpURLConnection.java:1127) ~[na:na]
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:179) ~[na:na]
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.connect(HttpsURLConnectionImpl.java:142) ~[na:na]
+	at org.jsoup.helper.HttpConnection$Response.execute(HttpConnection.java:858) ~[jsoup-1.15.4.jar:1.15.4]
+	at org.jsoup.helper.HttpConnection$Response.execute(HttpConnection.java:886) ~[jsoup-1.15.4.jar:1.15.4]
+	at org.jsoup.helper.HttpConnection$Response.execute(HttpConnection.java:828) ~[jsoup-1.15.4.jar:1.15.4]
+	at org.jsoup.helper.HttpConnection.execute(HttpConnection.java:365) ~[jsoup-1.15.4.jar:1.15.4]
+	at searchengine.siteIndexing.SiteMapRecursiveAction.runOneSiteIndexing(SiteMapRecursiveAction.java:121) ~[classes/:na]
+	... 7 common frames omitted
+
+2023-08-21 19:13:02.579  INFO 47841 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2023-08-21 19:13:02.602  INFO 47841 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2023-08-21 19:13:02.631  INFO 47841 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.

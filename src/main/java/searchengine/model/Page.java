@@ -27,11 +27,4 @@ public class Page implements Serializable {
     private String content;
     @OneToMany(mappedBy = "page", cascade = CascadeType.ALL)
     private List<Index> indexList = new LinkedList<>();
-
-    public Page(SiteModel site, String path, int code, String content) {
-        this.site = site;
-        this.path = path;
-        this.code = code;
-        this.content = content;
-    }
 }

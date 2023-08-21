@@ -1,6 +1,8 @@
 package searchengine.searching;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.springframework.stereotype.Component;
 import searchengine.dto.search.DetailedSearchData;
@@ -22,6 +24,7 @@ public class Searching {
     private final IndexRepository indexRepository;
     private final LemmaRepository lemmaRepository;
     private final SiteRepository siteRepository;
+    private static final Logger logger = LogManager.getLogger(Searching.class);
 
     List<DetailedSearchData> detailedSearchData = new ArrayList<>();
 
@@ -106,6 +109,7 @@ public class Searching {
             return relevance;
 
         } catch (IOException e) {
+            logger.error("An error occurred:", e);
             throw new RuntimeException(e);
         }
     }
@@ -138,6 +142,7 @@ public class Searching {
             }
             return snippet.toString().replaceAll(query, "<b>$0</b>");
         } catch (IOException e) {
+            logger.error("An error occurred:", e);
             throw new RuntimeException("Failed to fetch webpage content " + e);
         }
     }

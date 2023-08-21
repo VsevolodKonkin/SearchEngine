@@ -34,17 +34,4 @@ public class SiteModel implements Serializable {
     private List<Page> pages = new ArrayList<>();
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "site", cascade = CascadeType.ALL)
     private List<Lemma> lemma = new ArrayList<>();
-
-    public SiteModel(SiteStatus status, Date statusTime,
-                     String lastError, String url,
-                     String name, List<Page> pageModelList,
-                     List<Lemma> lemmaModelList) {
-        this.status = status;
-        this.statusTime = statusTime;
-        this.lastError = lastError;
-        this.url = url;
-        this.name = name;
-        this.pages = pageModelList;
-        this.lemma = lemmaModelList;
-    }
 }
