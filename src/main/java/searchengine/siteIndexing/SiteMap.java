@@ -59,6 +59,5 @@ public class SiteMap {
 
     public CopyOnWriteArrayList<SiteMap> getChildren() {
         return children;
-
     }
 }

@@ -1,6 +1,7 @@
 package searchengine.services.indexing;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import searchengine.dto.indexing.IndexingResponse;
 import searchengine.model.SiteModel;
@@ -18,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class IndexingServiceImpl implements IndexingService{
     ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(8);
     private final SiteRepository siteRepository;
@@ -67,8 +69,9 @@ public class IndexingServiceImpl implements IndexingService{
             threadPoolExecutor.shutdownNow();
             try {
                 threadPoolExecutor.awaitTermination(30, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+            } catch (Exception e) {
+                e.printStackTrace();
+                log.error("An error occurred:", e);
             }
             if (threadPoolExecutor.isShutdown()) {
                 for (SiteModel siteModel : sites) {

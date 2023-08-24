@@ -16,8 +16,6 @@ import searchengine.repository.IndexRepository;
 import searchengine.repository.LemmaRepository;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,13 +28,11 @@ import java.util.regex.Pattern;
 import static java.lang.Thread.sleep;
 @Slf4j
 public class SiteMapRecursiveAction extends RecursiveAction {
-//    @Value("${user-agent}")
-    private String userAgent = "Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) " +
+    private final String userAgent = "Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) " +
             "Gecko/20070725 Firefox/2.0.0.6";
-//    @Value("${referrer}")
-    private String referrer = "http://www.google.com";
+    private final String referrer = "http://www.google.com";
     private String url;
-    private SiteMap siteMap;
+    private final SiteMap siteMap;
     private SiteModel siteModel;
     private PageRepository pageRepository;
     private IndexRepository indexRepository;
@@ -101,7 +97,7 @@ public class SiteMapRecursiveAction extends RecursiveAction {
 
     private boolean isCorrectUrl(String url) {
         Pattern patternRoot = Pattern.compile("^" + siteMap.getUrl());
-        Pattern patternNotFile = Pattern.compile("([^\\s]+(\\.(?i)(jpg|png|gif|bmp|pdf))$)");
+        Pattern patternNotFile = Pattern.compile("(\\S+(\\.(?i)(jpg|png|gif|bmp|pdf))$)");
         Pattern patternNotAnchor = Pattern.compile("#([\\w\\-]+)?$");
 
         return patternRoot.matcher(url).lookingAt()
@@ -136,7 +132,6 @@ public class SiteMapRecursiveAction extends RecursiveAction {
             Thread.currentThread().interrupt();
             siteModel.setLastError("Ошибка чтения страницы: " + childUrl);
             log.error("An error occurred:", e);
-            throw new RuntimeException(e);
         } finally {
             siteRepository.save(siteModel);
         }
