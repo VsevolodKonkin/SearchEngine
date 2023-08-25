@@ -7,7 +7,7 @@
 
 #### Перед тем как начать, убедитесь, что у вас установлены следующие инструменты:
 
-Java (версия 17)  
+Java (версия 17 или новее)  
 Maven  
 MySQL Server
 
@@ -20,6 +20,7 @@ Spring Boot Starter Web
 Spring Boot Starter Thymeleaf  
 Spring Boot Starter Data JPA  
 Spring Boot Starter Test  
+JPA Repository  
 Jsoup 1.15.4  
 Log4j 2.19.0  
 Mockito  
@@ -32,16 +33,21 @@ Apache Lucene Morphology 1.5
 ## Запуск проекта  
 ### Следующие инструкции помогут вам развернуть копию проекта на вашем компьютере.
 
-1. Откройте терминал и клонируйте данный репозиторий на свой компьютер:  
-    git clone https://github.com/VsevolodKonkin/searchengine.git
+1. Откройте терминал и клонируйте данный репозиторий на свой компьютер:
+    git init: Инициализирует новый репозиторий Git в текущем каталоге     
+    git clone https://github.com/VsevolodKonkin/searchengine.git: Клонирует удаленный репозиторий Git и создает локальную копию
 
-2. Перейдите в директорию проекта:  
-    cd SearchEngine
+3. Перейдите в директорию проекта:  
+    cd .../Desktop/SearchEngine
 
-3. Создайте базу данных MySQL с именем search_engine.
-
-4. Откройте файл src/main/resources/application.yml и внесите изменения в раздел spring.datasource, чтобы он соответствовал вашей конфигурации MySQL:
-
+4. Создайте базу данных MySQL с именем search_engine:  
+    mysql -u root -p`ваш пароль`   
+    CREATE DATABASE `database name` - создать БД   
+    SHOW DATABASES; - посмотреть список баз данных на сервере MySQL    
+    USE `database name` - посмотреть БД  
+    CREATE TABLE `table name`(`имена и типы полей`) - для создания таблиц вручную  
+   
+6. Откройте файл src/main/resources/application.yml и внесите изменения в раздел spring.datasource, чтобы он соответствовал вашей конфигурации MySQL:  
     spring:  
     datasource:  
     username: your-username  
@@ -49,10 +55,10 @@ Apache Lucene Morphology 1.5
     url: jdbc:mysql://localhost:3306/search_engine?useSSL=false&requireSSL=false&allowPublicKeyRetrieval=true  
    #### Примечание: Замените `your-username` и `your-password` на соответствующие данные для вашей базы данных MySQL.
 
-5. Соберите проект с помощью Maven:  
+7. Соберите проект с помощью Maven:  
     mvn clean install
 
-6. Запустите проект:  
+8. Запустите проект:  
     mvn spring-boot:run  
 #### Приложение запустится на порту 8080. Откройте веб-браузер и перейдите по адресу http://localhost:8080, чтобы воспользоваться поисковой системой.
 
