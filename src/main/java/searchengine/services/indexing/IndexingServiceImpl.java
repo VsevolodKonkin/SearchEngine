@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @RequiredArgsConstructor
@@ -26,10 +27,11 @@ public class IndexingServiceImpl implements IndexingService{
     private final PageRepository pageRepository;
     private final IndexRepository indexRepository;
     private final LemmaRepository lemmaRepository;
-
+    private final AtomicBoolean indexingFlag = new AtomicBoolean(true);
 
     @Override
     public IndexingResponse startIndexing() {
+        resetIndexingFlag();
         IndexingResponse indexingResponse = new IndexingResponse();
         List<SiteModel> siteModelList = siteRepository.findAll();
         boolean isIndexing;
@@ -51,6 +53,10 @@ public class IndexingServiceImpl implements IndexingService{
         return indexingResponse;
     }
 
+    private void resetIndexingFlag() {
+        indexingFlag.set(true);
+    }
+
     @Override
     public IndexingResponse stopIndexing() {
         IndexingResponse indexingResponse = new IndexingResponse();
@@ -66,6 +72,7 @@ public class IndexingServiceImpl implements IndexingService{
             indexingResponse.setResult(false);
             indexingResponse.setError("Индексация не запущена");
         } else {
+            indexingFlag.set(false);
             threadPoolExecutor.shutdownNow();
             try {
                 threadPoolExecutor.awaitTermination(30, TimeUnit.SECONDS);
@@ -113,8 +120,11 @@ public class IndexingServiceImpl implements IndexingService{
             indexingResponse.setResult(false);
             indexingResponse.setError("Данная страница уже индексируется");
         } else {
+            if (threadPoolExecutor.isShutdown() || threadPoolExecutor.isTerminated()) {
+                threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(8);
+            }
             SiteIndexing siteIndexing = new SiteIndexing(pageRepository, url, siteModel,
-                    indexRepository, lemmaRepository, siteRepository);
+                    indexRepository, lemmaRepository, siteRepository, indexingFlag);
             threadPoolExecutor.execute(siteIndexing);
             indexingResponse.setResult(true);
             indexingResponse.setError("");
@@ -130,7 +140,7 @@ public class IndexingServiceImpl implements IndexingService{
             threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(8);
         }
         threadPoolExecutor.execute(new SiteIndexing(pageRepository, siteModel.getUrl(), siteModel,
-                indexRepository, lemmaRepository, siteRepository));
+                indexRepository, lemmaRepository, siteRepository, indexingFlag));
           siteModel.setName(siteModel.getName());
           siteRepository.save(siteModel);
         return true;

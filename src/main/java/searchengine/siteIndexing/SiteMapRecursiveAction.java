@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import static java.lang.Thread.sleep;
@@ -38,10 +39,12 @@ public class SiteMapRecursiveAction extends RecursiveAction {
     private IndexRepository indexRepository;
     private LemmaRepository lemmaRepository;
     private SiteRepository siteRepository;
+    private AtomicBoolean indexingFlag;
 
     public SiteMapRecursiveAction(String url, SiteMap siteMap, SiteModel siteModel,
                                   PageRepository pageRepository, IndexRepository indexRepository,
-                                  LemmaRepository lemmaRepository, SiteRepository siteRepository) {
+                                  LemmaRepository lemmaRepository, SiteRepository siteRepository,
+                                  AtomicBoolean indexingFlag) {
         this.url = url;
         this.siteMap = siteMap;
         this.siteModel = siteModel;
@@ -49,6 +52,7 @@ public class SiteMapRecursiveAction extends RecursiveAction {
         this.indexRepository = indexRepository;
         this.lemmaRepository = lemmaRepository;
         this.siteRepository = siteRepository;
+        this.indexingFlag = indexingFlag;
     }
 
     public SiteMapRecursiveAction(SiteMap siteMap) {
@@ -60,7 +64,7 @@ public class SiteMapRecursiveAction extends RecursiveAction {
         try {
             if (url != null) {
                 sleep(150);
-                Connection connection = Jsoup.connect(url).timeout(5000).
+                Connection connection = Jsoup.connect(url).timeout(15000).
                         userAgent(userAgent).referrer(referrer).
                         ignoreHttpErrors(true).ignoreContentType(true);
                 Document doc = connection.get();
@@ -79,15 +83,22 @@ public class SiteMapRecursiveAction extends RecursiveAction {
             e.printStackTrace();
             log.error("An error occurred:", e);
         }
-
-        List<SiteMapRecursiveAction> tasks = new ArrayList<>();
-        for (SiteMap child : siteMap.getChildren()) {
-            SiteMapRecursiveAction task = new SiteMapRecursiveAction(child);
-            tasks.add(task);
-            task.fork();
-        }
-        for (SiteMapRecursiveAction task : tasks) {
-            task.join();
+        if (indexingFlag.get()) {
+            List<SiteMapRecursiveAction> tasks = new ArrayList<>();
+            for (SiteMap child : siteMap.getChildren()) {
+                SiteMapRecursiveAction task = new SiteMapRecursiveAction(child);
+                tasks.add(task);
+            }
+            for (SiteMapRecursiveAction task : tasks) {
+                if (indexingFlag.get()) {
+                    task.fork();
+                } else {
+                    return;
+                }
+            }
+            for (SiteMapRecursiveAction task : tasks) {
+                task.join();
+            }
         }
     }
 
@@ -106,6 +117,9 @@ public class SiteMapRecursiveAction extends RecursiveAction {
     }
 
     private void runOneSiteIndexing(String childUrl) {
+        if (!indexingFlag.get()) {
+            return;
+        }
         siteModel.setStatusTime(new Date());
         siteModel.setStatus(SiteStatus.INDEXING);
         siteRepository.save(siteModel);
