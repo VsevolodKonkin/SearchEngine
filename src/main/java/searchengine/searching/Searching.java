@@ -26,9 +26,10 @@ public class Searching {
     private final SiteRepository siteRepository;
     private static final int MAX_PAGE_COUNT = 10;
     private static final int DEFAULT_LIMIT = 19;
-    List<DetailedSearchData> detailedSearchData = new ArrayList<>();
+//    List<DetailedSearchData> detailedSearchData = new ArrayList<>();
 
     public SearchData getData(String query, String url, int offset, int limit) {
+        List<DetailedSearchData> detailedSearchData = new ArrayList<>();
         SearchData searchData = new SearchData();
         List<DetailedSearchData> dataList = getDetailedSearchData(query, url);
         for (DetailedSearchData data : dataList) {
@@ -109,7 +110,7 @@ public class Searching {
                     Page page = indexLemma.getPage();
                     if (page != null) {
                         String text = Jsoup.parse(page.getContent()).text();
-                        snippet.append(limitSnippetLength(text, query));
+                        snippet.append(limitSnippetLength(text));
                     }
                 }
             }
@@ -129,31 +130,8 @@ public class Searching {
         return lemmaFinder.getLemmaSet(query);
     }
 
-    private String limitSnippetLength(String content, String query) {
+    private String limitSnippetLength(String content) {
         int maxSnippetLength = 300;
-        String[] queryWords = query.split(" ");
-        StringBuilder snippet = new StringBuilder();
-        if (queryWords.length == 1) {
-            int startIndex = content.toLowerCase().indexOf(query.toLowerCase());
-            if (startIndex != -1) {
-                int snippetStart = Math.max(0, startIndex - maxSnippetLength / 2);
-                int snippetEnd = Math.min(content.length(), snippetStart + maxSnippetLength);
-                snippet.append(content.substring(snippetStart, snippetEnd));
-            }
-        } else {
-            for (String word : queryWords) {
-                int startIndex = content.toLowerCase().indexOf(word.toLowerCase());
-                if (startIndex == -1) {
-                    continue;
-                }
-                int snippetStart = Math.max(0, startIndex - maxSnippetLength / 2);
-                int snippetEnd = Math.min(content.length(), snippetStart + maxSnippetLength);
-                snippet.append(content, snippetStart, startIndex);
-                snippet.append("<b>");
-                snippet.append(content, startIndex, snippetEnd);
-                snippet.append("</b>");
-            }
-        }
-        return snippet.toString();
+        return content.substring(0, Math.min(content.length(), maxSnippetLength));
     }
 }

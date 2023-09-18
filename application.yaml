@@ -31,5 +31,6 @@ spring:
 
 logging:
   file:
+    name: logs/spring.log
     path: logs
 

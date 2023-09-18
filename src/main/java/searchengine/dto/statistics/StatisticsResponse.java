@@ -7,4 +7,5 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class StatisticsResponse {
     private boolean result;
     private StatisticsData statistics;
+    private String error;
 }
