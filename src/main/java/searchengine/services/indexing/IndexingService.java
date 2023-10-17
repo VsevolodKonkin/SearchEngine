@@ -1,9 +1,9 @@
 package searchengine.services.indexing;
 
-import searchengine.dto.indexing.IndexingResponse;
+import org.springframework.http.ResponseEntity;
 
 public interface IndexingService {
-    IndexingResponse startIndexing();
-    IndexingResponse stopIndexing();
-    IndexingResponse indexPage(String url);
+    ResponseEntity startIndexing();
+    ResponseEntity stopIndexing();
+    ResponseEntity indexPage(String url);
 }

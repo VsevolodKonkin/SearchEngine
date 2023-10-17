@@ -1,7 +1,7 @@
 package searchengine.services.search;
 
-import searchengine.dto.search.SearchResponse;
+import org.springframework.http.ResponseEntity;
 
 public interface SearchService {
-    SearchResponse getSearch(String query, String url, int offset, int limit);
+    ResponseEntity searchPages(String query, String url, int offset, int limit);
 }

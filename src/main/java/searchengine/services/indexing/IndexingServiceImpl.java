@@ -1,148 +1,248 @@
 package searchengine.services.indexing;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import searchengine.dto.indexing.IndexingResponse;
-import searchengine.model.SiteModel;
+import searchengine.LemmaFinder;
+import searchengine.SiteResearcher;
+import searchengine.config.Account;
+import searchengine.dto.ErrorResponse;
+import searchengine.dto.indexing.OkResponse;
+import searchengine.model.*;
 import searchengine.model.enums.SiteStatus;
 import searchengine.repository.IndexRepository;
 import searchengine.repository.LemmaRepository;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
-import searchengine.siteIndexing.SiteIndexing;
 
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ForkJoinPool;
+
+
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class IndexingServiceImpl implements IndexingService{
-    ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(8);
-    private final SiteRepository siteRepository;
-    private final PageRepository pageRepository;
-    private final IndexRepository indexRepository;
-    private final LemmaRepository lemmaRepository;
-    private final AtomicBoolean indexingFlag = new AtomicBoolean(true);
+public class IndexingServiceImpl implements IndexingService {
+    private final Account account;
+    private final Map<SiteData, List<PageData>> sitesIndexing = Collections.synchronizedMap(new HashMap<>());
+    private String pageIndexing = "";
+    @Autowired
+    @Getter
+    private PageRepository pageRepository;
+    @Autowired
+    private SiteRepository siteRepository;
+    @Autowired
+    private LemmaRepository lemmaRepository;
+    @Autowired
+    private IndexRepository indexRepository;
 
     @Override
-    public IndexingResponse startIndexing() {
-        resetIndexingFlag();
-        IndexingResponse indexingResponse = new IndexingResponse();
-        List<SiteModel> siteModelList = siteRepository.findAll();
-        boolean isIndexing;
-        for (SiteModel siteModel : siteModelList) {
-            if (siteModel.getStatus().equals(SiteStatus.INDEXING)) {
-                indexingResponse.setResult(false);
-                indexingResponse.setError("Индексация уже запущена");
+    public ResponseEntity startIndexing() {
+        if (!sitesIndexing.isEmpty()) {
+            return ResponseEntity.ok(new ErrorResponse("Предыдущая индексация еще не завершена"));
+        }
+        if (!pageIndexing.isBlank()) {
+            return ResponseEntity.ok(new ErrorResponse("Индексация невозможна. Запущена индексация страницы"));
+        }
+        for (SiteData site : siteRepository.findAll()) {
+            new Thread(() -> {
+                SiteData siteData = siteRepository.findFirstByName(site.getName());
+                if (siteData != null) {
+                    deleteSiteData(siteData);
+                    siteData.setUrl(getSiteUrl(site));
+                } else {
+                    siteData = new SiteData(SiteStatus.INDEXING, new Date(),
+                            "", getSiteUrl(site), site.getName());
+                }
+                siteRepository.save(siteData);
+                List<PageData> pageDataList = new ArrayList<>(List.of(new PageData(siteData, "/", 0, "")));
+                sitesIndexing.put(siteData, pageDataList);
+
+                new ForkJoinPool().invoke(new SiteResearcher(pageDataList.get(0), pageDataList, this));
+
+                if (siteData.getStatus() == SiteStatus.INDEXING) {
+                    insertAllData(pageDataList, siteData);
+                    siteData.setStatus(SiteStatus.INDEXED);
+                    siteRepository.save(siteData);
+                }
+                sitesIndexing.remove(siteData);
+            }).start();
+        }
+        return ResponseEntity.ok(new OkResponse());
+    }
+
+    @Override
+    public ResponseEntity stopIndexing() {
+        if (sitesIndexing.isEmpty()) {
+            return ResponseEntity.ok(new ErrorResponse("Индексация не запущена"));
+        }
+        for (SiteData siteData : sitesIndexing.keySet()) {
+            siteData.setStatus(SiteStatus.FAILED);
+            siteData.setLastError("Индексация остановлена пользователем");
+            siteRepository.save(siteData);
+        }
+        return ResponseEntity.ok(new OkResponse());
+    }
+
+    @Override
+    public ResponseEntity indexPage(String url) {
+        if (!sitesIndexing.isEmpty()) {
+            return ResponseEntity.ok(new ErrorResponse("Индексация невозможна. Выполняется индексация сайтов."));
+        }
+        SiteData siteData = findSiteData(url);
+        if (siteData == null) {
+            return ResponseEntity.ok(new ErrorResponse("Данная страница находится за пределами сайтов, указанных в конфигурационном файле"));
+        }
+        Document doc;
+        try {
+            doc = getDocument(url);
+        } catch (IOException e) {
+            log.error("An error occurred:", e);
+            return ResponseEntity.ok(new ErrorResponse("Страница не доступна"));
+        }
+        if (pageIndexing.equals(doc.location())) {
+            return ResponseEntity.ok(new ErrorResponse("Эта страница уже индексируется"));
+        }
+        pageIndexing = doc.location();
+        PageData pageData = pageRepository
+                .findFirstByPathAndSite(getRelativeUrl(doc.location(), siteData.getUrl()), siteData);
+        if (pageData != null) {
+            deletePageData(pageData);
+        }
+        pageData = new PageData(siteData, getRelativeUrl(doc.location(), siteData.getUrl()),
+                doc.connection().response().statusCode(), doc.html());
+        insertAllData(new ArrayList<>(List.of(pageData)), siteData);
+        pageIndexing = "";
+        return ResponseEntity.ok(new OkResponse());
+    }
+
+    public SiteData findSiteData(String url) {
+        List<SiteData> siteDataList = siteRepository.findAll();
+        return siteDataList
+                .stream()
+                .filter(s -> !getRelativeUrl(url, s.getUrl()).isBlank())
+                .findFirst()
+                .orElse(null);
+    }
+
+    public void deleteSiteData(SiteData siteData) {
+        sitesIndexing.put(siteData, null);
+        siteData.setStatus(SiteStatus.INDEXING);
+        siteData.setLastError("");
+        siteRepository.save(siteData);
+        while (pageRepository.countBySite(siteData) != 0 && siteData.getStatus() != SiteStatus.FAILED) {
+            List<PageData> pageDataList = pageRepository.findFirst500BySite(siteData);
+            pageRepository.deleteAll(pageDataList);
+        }
+        if (siteData.getStatus() != SiteStatus.FAILED) {
+            lemmaRepository.deleteAll(lemmaRepository.findAllBySite(siteData));
+        }
+        siteData.setStatusTime(new Date());
+    }
+
+    public void deletePageData(PageData pageData) {
+        List<LemmaData> lemmaDataListToUpdate = new ArrayList<>();
+        List<LemmaData> lemmaDataListToDelete = new ArrayList<>();
+
+        pageData.getLemmaDataList().forEach(lemmaData -> {
+            if (lemmaData.getFrequency() > 1) {
+                lemmaData.setFrequency(lemmaData.getFrequency() - 1);
+                lemmaDataListToUpdate.add(lemmaData);
+            } else {
+                lemmaDataListToDelete.add(lemmaData);
+            }
+        });
+        pageRepository.delete(pageData);
+        lemmaRepository.deleteAll(lemmaDataListToDelete);
+        lemmaRepository.saveAll(lemmaDataListToUpdate);
+    }
+
+    public void insertAllData(List<PageData> pageDataList, SiteData siteData) {
+        List<LemmaData> lemmasToInsert = new ArrayList<>();
+        List<IndexData> indexesToInsert = new ArrayList<>();
+        List<LemmaData> lemmaDataList = lemmaRepository.findAllBySite(siteData);
+        for (PageData pageData : pageDataList) {
+            if (pageData.getCode() >= 400) {
                 continue;
             }
-            isIndexing = isStartIndexing(siteModel);
-            if (isIndexing) {
-                indexingResponse.setResult(true);
-                indexingResponse.setError("");
-            } else {
-                indexingResponse.setResult(false);
-                indexingResponse.setError("Индексацию не удалось запустить");
-            }
-        }
-        return indexingResponse;
-    }
-
-    private void resetIndexingFlag() {
-        indexingFlag.set(true);
-    }
-
-    @Override
-    public IndexingResponse stopIndexing() {
-        IndexingResponse indexingResponse = new IndexingResponse();
-        Iterable<SiteModel> sites = siteRepository.findAll();
-        boolean isIndexing = false;
-        for (SiteModel siteModel : sites) {
-            if (siteModel.getStatus().equals(SiteStatus.INDEXING)) {
-                isIndexing = true;
-                break;
-            }
-        }
-        if (threadPoolExecutor.getActiveCount() == 0 && !isIndexing) {
-            indexingResponse.setResult(false);
-            indexingResponse.setError("Индексация не запущена");
-        } else {
-            indexingFlag.set(false);
-            threadPoolExecutor.shutdownNow();
+            HashMap<String, Integer> lemmasMap = null;
             try {
-                threadPoolExecutor.awaitTermination(30, TimeUnit.SECONDS);
-            } catch (Exception e) {
-                e.printStackTrace();
+                lemmasMap = LemmaFinder.getInstance().collectLemmas(pageData.getContent());
+            } catch (IOException e) {
                 log.error("An error occurred:", e);
             }
-            if (threadPoolExecutor.isShutdown()) {
-                for (SiteModel siteModel : sites) {
-                    if (siteModel.getStatus().equals(SiteStatus.INDEXING)) {
-                        siteModel.setStatus(SiteStatus.FAILED);
-                        siteModel.setLastError("Индексация остановлена пользователем");
-                        siteRepository.save(siteModel);
-                    }
+            for (String lemma : lemmasMap.keySet()) {
+                boolean isLemmaInListToInsert = true;
+                LemmaData lemmaData = findLemmaInList(lemmasToInsert, lemma);
+                if (lemmaData == null) {
+                    lemmaData = findLemmaInList(lemmaDataList, lemma);
+                    isLemmaInListToInsert = false;
                 }
-                indexingResponse.setResult(true);
-                indexingResponse.setError("");
-            } else {
-                indexingResponse.setResult(false);
-                indexingResponse.setError("Не удалось остановить индексацию");
+                if (lemmaData == null) {
+                    lemmaData = new LemmaData(siteData, lemma, 1);
+                } else {
+                    lemmaData.setFrequency(lemmaData.getFrequency() + 1);
+                }
+                if (!isLemmaInListToInsert) {
+                    lemmasToInsert.add(lemmaData);
+                }
+                indexesToInsert.add(new IndexData(pageData, lemmaData, lemmasMap.get(lemma)));
             }
         }
-        return indexingResponse;
+        pageRepository.saveAll(pageDataList);
+        lemmaRepository.saveAll(lemmasToInsert);
+        indexRepository.saveAll(indexesToInsert);
+        siteData.setStatusTime(new Date());
+        siteRepository.save(siteData);
     }
 
-    @Override
-    public IndexingResponse indexPage(String url) {
-        IndexingResponse indexingResponse = new IndexingResponse();
-        Iterable<SiteModel> sites = siteRepository.findAll();
-        String siteString = "";
-        SiteStatus siteStatus = null;
-        SiteModel siteModel = null;
-        for (SiteModel site : sites) {
-            if (url.contains(site.getUrl())) {
-                siteString = site.getUrl();
-                siteStatus = site.getStatus();
-                siteModel = site;
-            }
+    public String getRelativeUrl(String url, String siteUrl) {
+        if (url == null || siteUrl == null) {
+            return "";
         }
-        if (siteString.isBlank()) {
-            indexingResponse.setResult(false);
-            indexingResponse.setError("Данная страница находится за пределами сайтов, " +
-                    "указанных в конфигурационном файле");
-        } else if (siteStatus.equals(SiteStatus.INDEXING)) {
-            indexingResponse.setResult(false);
-            indexingResponse.setError("Данная страница уже индексируется");
-        } else {
-            if (threadPoolExecutor.isShutdown() || threadPoolExecutor.isTerminated()) {
-                threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(8);
-            }
-            SiteIndexing siteIndexing = new SiteIndexing(pageRepository, url, siteModel,
-                    indexRepository, lemmaRepository, siteRepository, indexingFlag);
-            threadPoolExecutor.execute(siteIndexing);
-            indexingResponse.setResult(true);
-            indexingResponse.setError("");
+        String urlWoWWW = url.replaceFirst("//www.", "//");
+        String siteUrlWoWWW = siteUrl.replaceFirst("//www.", "//");
+        if (!urlWoWWW.startsWith(siteUrlWoWWW)) {
+            return "";
         }
-        return indexingResponse;
+        String relativeUrl = urlWoWWW.substring(siteUrlWoWWW.length());
+        if (!relativeUrl.startsWith("/")) {
+            relativeUrl = "/".concat(relativeUrl);
+        }
+        return relativeUrl;
     }
 
-    private boolean isStartIndexing(SiteModel siteModel) {
-        siteModel.setStatus(SiteStatus.INDEXING);
-        siteModel.setLastError("");
-        siteRepository.save(siteModel);
-        if (threadPoolExecutor.getActiveCount() == 0) {
-            threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(8);
+    public String getSiteUrl(SiteData site) {
+        try {
+            Document doc = getDocument(site.getUrl());
+            return doc.location().endsWith("/")
+                    ? doc.location().substring(0, doc.location().length() - 1)
+                    : doc.location();
+        } catch (IOException e) {
+            log.error("An error occurred:", e);
+            return site.getUrl();
         }
-        threadPoolExecutor.execute(new SiteIndexing(pageRepository, siteModel.getUrl(), siteModel,
-                indexRepository, lemmaRepository, siteRepository, indexingFlag));
-          siteModel.setName(siteModel.getName());
-          siteRepository.save(siteModel);
-        return true;
+    }
+
+    public LemmaData findLemmaInList(List<LemmaData> lemmaDataList, String lemma) {
+        return lemmaDataList
+                .stream()
+                .filter(l -> l.getLemma().equals(lemma))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public Document getDocument(String url) throws IOException {
+        return Jsoup.connect(url)
+                .userAgent(account.getUserAgent())
+                .referrer(account.getReferrer())
+                .get();
     }
 }

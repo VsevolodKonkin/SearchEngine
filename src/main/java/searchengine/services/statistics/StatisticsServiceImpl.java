@@ -8,7 +8,7 @@ import searchengine.dto.statistics.DetailedStatisticsItem;
 import searchengine.dto.statistics.StatisticsData;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.dto.statistics.TotalStatistics;
-import searchengine.model.SiteModel;
+import searchengine.model.SiteData;
 import searchengine.model.enums.SiteStatus;
 import searchengine.repository.LemmaRepository;
 import searchengine.repository.PageRepository;
@@ -50,32 +50,33 @@ public class StatisticsServiceImpl implements StatisticsService {
         for (Site site : sitesLists) {
             DetailedStatisticsItem detailedStatisticsItem = new DetailedStatisticsItem();
             String url = site.getUrl();
-            if (url.contains("www.")) url = url.replaceAll("www.", "");
-            SiteModel siteModel = getSiteModel(url, site.getName());
+            SiteData siteData = getSiteModel(url, site.getName());
+            if (url.endsWith("/")) url = url.substring(0, url.length() - 1);
             detailedStatisticsItem.setUrl(url);
-            detailedStatisticsItem.setPages(pageRepository.getPagesCountById(siteModel.getId()));
-            detailedStatisticsItem.setLemmas(lemmaRepository.getLemmasCountById(siteModel.getId()));
-            detailedStatisticsItem.setError(siteModel.getLastError());
-            detailedStatisticsItem.setStatusTime(siteModel.getStatusTime());
-            detailedStatisticsItem.setStatus(siteModel.getStatus());
-            detailedStatisticsItem.setName(siteModel.getName());
+            detailedStatisticsItem.setPages(pageRepository.getPagesCountById(siteData.getId()));
+            detailedStatisticsItem.setLemmas(lemmaRepository.getLemmasCountById(siteData.getId()));
+            detailedStatisticsItem.setError(siteData.getLastError());
+            detailedStatisticsItem.setStatusTime(siteData.getStatusTime());
+            detailedStatisticsItem.setStatus(siteData.getStatus());
+            detailedStatisticsItem.setName(siteData.getName());
             detailedStatisticsItems.add(detailedStatisticsItem);
         }
         return detailedStatisticsItems;
     }
 
-    private SiteModel getSiteModel(String url, String name) {
-        SiteModel siteModel = siteRepository.findByUrl(url);
-        if (siteModel == null) {
-            siteModel = new SiteModel();
-            siteModel.setName(name);
-            siteModel.setStatus(SiteStatus.FAILED);
-            siteModel.setUrl(url);
-            siteModel.setStatusTime(new Date());
-            siteModel.setLastError("Индексация еще не запускалась");
-            siteRepository.save(siteModel);
+    private SiteData getSiteModel(String url, String name) {
+        if (url.endsWith("/")) url = url.substring(0, url.length() - 1);
+        SiteData siteData = siteRepository.findFirstByUrl(url);
+        if (siteData == null) {
+            siteData = new SiteData();
+            siteData.setName(name);
+            siteData.setStatus(SiteStatus.FAILED);
+            siteData.setUrl(url);
+            siteData.setStatusTime(new Date());
+            siteData.setLastError("Индексация еще не запускалась");
+            siteRepository.save(siteData);
         }
-        return siteModel;
+        return siteData;
     }
 
     private StatisticsResponse getStatisticsResponse(TotalStatistics totalStatistics,

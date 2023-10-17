@@ -5,25 +5,31 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.io.Serializable;
-import java.util.LinkedList;
-import java.util.List;
+
 
 @Entity
 @Setter
 @Getter
 @NoArgsConstructor
-public class Lemma implements Serializable {
+@Table(name = "lemma")
+public class LemmaData {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "site_id", referencedColumnName = "id")
-    private SiteModel site;
-    @OneToMany(mappedBy = "lemma", cascade = CascadeType.ALL)
-    private List<Index> indexList = new LinkedList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "site_id", nullable = false)
+    private SiteData site;
+
     @Column(columnDefinition = "VARCHAR(255)", nullable = false)
     private String lemma;
+
     @Column(nullable = false)
     private int frequency;
+
+    public LemmaData(SiteData site, String lemma, int frequency) {
+        this.site = site;
+        this.lemma = lemma;
+        this.frequency = frequency;
+    }
 }

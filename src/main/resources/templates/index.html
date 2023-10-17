@@ -122,16 +122,15 @@
             <div class="Tabs-block" id="search">
               <div class="Section">
                 <div class="Section-header">
-                  <h2 class="Section-title">Search
-                  </h2>
+                  <h2 class="Section-title">Search</h2>
                 </div>
                 <form class="form form_close" action="#" method="post" data-send="search" data-sendlimit="10">
                   <div class="form-group">
                     <div class="form-selectWrap">
                       <!-- - var options = setOptions(items, ['value', 'selected', 'disabled']);-->
-                      <select class="form-select" name="siteModel">
-                        <option value="" selected="selected">All sites
-                        </option>
+                      <select class="form-select" name="site">
+                        <option value="" selected="selected">All sites</option>
+<!--                        <option th:each="site : ${allSites}" th:value="${site.id}" th:text="${site.name}"></option>-->
                       </select>
                     </div>
                   </div>
