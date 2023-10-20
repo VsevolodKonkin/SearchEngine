@@ -48,48 +48,66 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public ResponseEntity searchPages(String query, String site, int offset, int limit) {
-        LemmaFinder lemmaFinder;
+            LemmaFinder lemmaFinder = createLemmaFinder();
+            if (query.isBlank()) {
+                return ResponseEntity.ok(new ErrorResponse("Задан пустой поисковый запрос"));
+            }
+            if (!currentQuery.isBlank()) {
+                return ResponseEntity.ok(new ErrorResponse("Обрабатывается запрос \"" + currentQuery + "\""));
+            }
+            ArrayList<SiteData> siteDataList = getSiteDataList(site);
+            currentQuery = query;
+            if (!currentQuery.equals(prevQuery)) {
+                queryLemmas = getQueryLemmas(lemmaFinder, query, siteDataList).keySet();
+                List<LemmaData> lemmaDataList = getLemmasFromData(queryLemmas, siteDataList);
+                List<PageData> pageDataList = getPagesFromData(lemmaDataList, siteDataList);
+                fillPagesInfo(lemmaDataList, pageDataList);
+                prevQuery = currentQuery;
+            }
+            SearchResponse response = createSearchResponse(offset, limit);
+            currentQuery = "";
+            return ResponseEntity.ok(response);
+    }
+
+    private LemmaFinder createLemmaFinder() {
         try {
-            lemmaFinder = LemmaFinder.getInstance();
+            return LemmaFinder.getInstance();
         } catch (IOException e) {
             log.error("An error occurred:", e);
-            return ResponseEntity.ok(new ErrorResponse("Ошибка при создании экземпляра LemmaFinder"));
+            return null;
         }
-        if (query.isBlank()) {
-            return ResponseEntity.ok(new ErrorResponse("Задан пустой поисковый запрос"));
-        }
-        if (!currentQuery.isBlank()) {
-            return ResponseEntity.ok(new ErrorResponse("Обрабатывается запрос \"" + currentQuery + "\""));
-        }
-        ArrayList<SiteData> siteDataList;
+    }
+
+    private ArrayList<SiteData> getSiteDataList(String site) {
         if (site == null) {
-            siteDataList = new ArrayList<>(siteRepository.findAll());
+            ArrayList<SiteData> siteDataList = new ArrayList<>(siteRepository.findAll());
             if (siteDataList.isEmpty() || siteRepository.existsByStatus(SiteStatus.INDEXING)) {
-                return ResponseEntity.ok(new ErrorResponse("Сайт(ы) не проиндексирован(ы)"));
+                throw new RuntimeException("Сайт(ы) не проиндексирован(ы)");
             }
+            return siteDataList;
         } else {
             SiteData siteData = siteRepository.findFirstByUrl(site);
             if (siteData == null || siteData.getStatus() == SiteStatus.INDEXING) {
-                return ResponseEntity.ok(new ErrorResponse("Сайт не проиндексирован"));
+                throw new RuntimeException("Сайт не проиндексирован");
             }
-            siteDataList = new ArrayList<>();
+            ArrayList<SiteData> siteDataList = new ArrayList<>();
             siteDataList.add(siteData);
+            return siteDataList;
         }
-        currentQuery = query;
-        if (!currentQuery.equals(prevQuery)) {
-            queryLemmas = lemmaFinder.collectLemmas(query).keySet();
-            List<LemmaData> lemmaDataList = getLemmasFromData(queryLemmas, siteDataList);
-            List<PageData> pageDataList = getPagesFromData(lemmaDataList, siteDataList);
-            fillPagesInfo(lemmaDataList, pageDataList);
-            prevQuery = currentQuery;
-        }
+    }
+
+    private Map<String, Integer> getQueryLemmas(LemmaFinder lemmaFinder, String query, List<SiteData> siteDataList) {
+        return lemmaFinder.collectLemmas(query);
+    }
+
+    private SearchResponse createSearchResponse(int offset, int limit) {
         SearchResponse response = new SearchResponse();
         response.setCount(pageInfoItems.size());
-        response.setData(getSubPageInfoList(offset, Math.min(pageInfoItems.size(), offset + limit)));
+        response.setData(fillSubPageInfoList(offset, Math.min(pageInfoItems.size(), offset + limit)));
         response.setResult(true);
-        currentQuery = "";
-        return ResponseEntity.ok(response);
+        return response;
     }
+
 
     public List<LemmaData> getLemmasFromData(Set<String> queryLemmas, List<SiteData> siteDataList) {
         List<LemmaData> lemmaDataList = new ArrayList<>();
@@ -112,6 +130,11 @@ public class SearchServiceImpl implements SearchService {
         if (lemmaDataList.isEmpty()) {
             return new ArrayList<>();
         }
+        List<PageData> pageDataList = getPagesForLemmas(lemmaDataList, siteDataList);
+        return filterPagesByLemmaData(lemmaDataList, pageDataList);
+    }
+
+    private List<PageData> getPagesForLemmas(List<LemmaData> lemmaDataList, List<SiteData> siteDataList) {
         List<PageData> pageDataList = new ArrayList<>();
         for (LemmaData lemmaData : lemmaDataList) {
             String lemma = lemmaData.getLemma();
@@ -122,21 +145,29 @@ public class SearchServiceImpl implements SearchService {
                 }
             }
         }
+        return pageDataList;
+    }
+
+    private List<PageData> filterPagesByLemmaData(List<LemmaData> lemmaDataList, List<PageData> pageDataList) {
         List<PageData> filteredPageDataList = new ArrayList<>();
         for (PageData pageData : pageDataList) {
-            boolean existsInAllLemmas = true;
-            for (LemmaData lemmaData : lemmaDataList) {
-                if (!indexRepository.existsByLemma_LemmaAndPage(lemmaData.getLemma(), pageData)) {
-                    existsInAllLemmas = false;
-                    break;
-                }
-            }
+            boolean existsInAllLemmas = existsInAllLemmas(lemmaDataList, pageData);
             if (existsInAllLemmas) {
                 filteredPageDataList.add(pageData);
             }
         }
         return filteredPageDataList;
     }
+
+    private boolean existsInAllLemmas(List<LemmaData> lemmaDataList, PageData pageData) {
+        for (LemmaData lemmaData : lemmaDataList) {
+            if (!indexRepository.existsByLemma_LemmaAndPage(lemmaData.getLemma(), pageData)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     public void fillPagesInfo(List<LemmaData> lemmaDataDataList, List<PageData> pageDataDataList) {
         pageInfoItems.clear();
@@ -157,7 +188,7 @@ public class SearchServiceImpl implements SearchService {
         }
     }
 
-    public List<PageInfoItem> getSubPageInfoList(int fromIndex, int toIndex){
+    public List<PageInfoItem> fillSubPageInfoList(int fromIndex, int toIndex){
         List<PageInfoItem> subPageInfoList = pageInfoItems.subList(fromIndex, toIndex);
         for (PageInfoItem pageInfoItem: subPageInfoList){
             PageData pageData = pageInfoItem.getPageData();

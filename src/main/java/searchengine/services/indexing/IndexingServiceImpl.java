@@ -51,6 +51,11 @@ public class IndexingServiceImpl implements IndexingService {
         if (!pageIndexing.isBlank()) {
             return ResponseEntity.ok(new ErrorResponse("Индексация невозможна. Запущена индексация страницы"));
         }
+        indexAllSites();
+        return ResponseEntity.ok(new OkResponse());
+    }
+
+    private void indexAllSites() {
         for (SiteData site : siteRepository.findAll()) {
             new Thread(() -> {
                 SiteData siteData = siteRepository.findFirstByName(site.getName());
@@ -64,18 +69,19 @@ public class IndexingServiceImpl implements IndexingService {
                 siteRepository.save(siteData);
                 List<PageData> pageDataList = new ArrayList<>(List.of(new PageData(siteData, "/", 0, "")));
                 sitesIndexing.put(siteData, pageDataList);
-
-                new ForkJoinPool().invoke(new SiteResearcher(pageDataList.get(0), pageDataList, this));
-
-                if (siteData.getStatus() == SiteStatus.INDEXING) {
-                    insertAllData(pageDataList, siteData);
-                    siteData.setStatus(SiteStatus.INDEXED);
-                    siteRepository.save(siteData);
-                }
+                indexSitePages(pageDataList, siteData);
                 sitesIndexing.remove(siteData);
             }).start();
         }
-        return ResponseEntity.ok(new OkResponse());
+    }
+
+    private void indexSitePages(List<PageData> pageDataList, SiteData siteData) {
+        new ForkJoinPool().invoke(new SiteResearcher(pageDataList.get(0), pageDataList, this));
+        if (siteData.getStatus() == SiteStatus.INDEXING) {
+            insertAllData(pageDataList, siteData);
+            siteData.setStatus(SiteStatus.INDEXED);
+            siteRepository.save(siteData);
+        }
     }
 
     @Override
@@ -111,17 +117,22 @@ public class IndexingServiceImpl implements IndexingService {
             return ResponseEntity.ok(new ErrorResponse("Эта страница уже индексируется"));
         }
         pageIndexing = doc.location();
-        PageData pageData = pageRepository
-                .findFirstByPathAndSite(getRelativeUrl(doc.location(), siteData.getUrl()), siteData);
-        if (pageData != null) {
-            deletePageData(pageData);
-        }
-        pageData = new PageData(siteData, getRelativeUrl(doc.location(), siteData.getUrl()),
-                doc.connection().response().statusCode(), doc.html());
-        insertAllData(new ArrayList<>(List.of(pageData)), siteData);
+        getPageData(siteData, doc);
         pageIndexing = "";
         return ResponseEntity.ok(new OkResponse());
     }
+
+    private void getPageData(SiteData siteData, Document doc) {
+        String relativeUrl = getRelativeUrl(doc.location(), siteData.getUrl());
+        PageData pageData = pageRepository.findFirstByPathAndSite(relativeUrl, siteData);
+        if (pageData != null) {
+            deletePageData(pageData);
+        }
+        pageData = new PageData(siteData, relativeUrl,
+                doc.connection().response().statusCode(), doc.html());
+        insertAllData(new ArrayList<>(List.of(pageData)), siteData);
+    }
+
 
     public SiteData findSiteData(String url) {
         List<SiteData> siteDataList = siteRepository.findAll();
@@ -172,17 +183,12 @@ public class IndexingServiceImpl implements IndexingService {
             if (pageData.getCode() >= 400) {
                 continue;
             }
-            HashMap<String, Integer> lemmasMap = null;
-            try {
-                lemmasMap = LemmaFinder.getInstance().collectLemmas(pageData.getContent());
-            } catch (IOException e) {
-                log.error("An error occurred:", e);
-            }
+            HashMap<String, Integer> lemmasMap = getLemmasMap(pageData.getContent());
             for (String lemma : lemmasMap.keySet()) {
                 boolean isLemmaInListToInsert = true;
-                LemmaData lemmaData = findLemmaInList(lemmasToInsert, lemma);
+                LemmaData lemmaData = findLemma(lemmasToInsert, lemma);
                 if (lemmaData == null) {
-                    lemmaData = findLemmaInList(lemmaDataList, lemma);
+                    lemmaData = findLemma(lemmaDataList, lemma);
                     isLemmaInListToInsert = false;
                 }
                 if (lemmaData == null) {
@@ -196,6 +202,27 @@ public class IndexingServiceImpl implements IndexingService {
                 indexesToInsert.add(new IndexData(pageData, lemmaData, lemmasMap.get(lemma)));
             }
         }
+        saveData(pageDataList, lemmasToInsert, indexesToInsert, siteData);
+    }
+
+    private HashMap<String, Integer> getLemmasMap(String content) {
+        HashMap<String, Integer> lemmasMap = null;
+        try {
+            lemmasMap = LemmaFinder.getInstance().collectLemmas(content);
+        } catch (IOException e) {
+            log.error("An error occurred:", e);
+        }
+        return lemmasMap;
+    }
+
+    private LemmaData findLemma(List<LemmaData> lemmaDataList, String lemma) {
+        return lemmaDataList.stream()
+                .filter(lemmaData -> lemmaData.getLemma().equals(lemma))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private void saveData(List<PageData> pageDataList, List<LemmaData> lemmasToInsert, List<IndexData> indexesToInsert, SiteData siteData) {
         pageRepository.saveAll(pageDataList);
         lemmaRepository.saveAll(lemmasToInsert);
         indexRepository.saveAll(indexesToInsert);
@@ -229,14 +256,6 @@ public class IndexingServiceImpl implements IndexingService {
             log.error("An error occurred:", e);
             return site.getUrl();
         }
-    }
-
-    public LemmaData findLemmaInList(List<LemmaData> lemmaDataList, String lemma) {
-        return lemmaDataList
-                .stream()
-                .filter(l -> l.getLemma().equals(lemma))
-                .findFirst()
-                .orElse(null);
     }
 
     public Document getDocument(String url) throws IOException {

@@ -32,19 +32,34 @@ public class SiteResearcher extends RecursiveTask<PageData> {
         if (siteData.getStatus() == SiteStatus.FAILED) {
             return pageData;
         }
-        Document doc;
-        try {
-            doc = indexingService.getDocument(siteData.getUrl().concat(pageData.getPath()));
-        } catch (IOException e) {
+        Document doc = getDocument();
+        if (doc == null) {
             pageData.setCode(404);
             return pageData;
         }
         pageData.setCode(doc.connection().response().statusCode());
         pageData.setContent(doc.html());
+        processChildResearcherList(doc);
+        insertPageDataIfNecessary();
+        return pageData;
+    }
+
+    private Document getDocument() {
+        try {
+            return indexingService.getDocument(siteData.getUrl().concat(pageData.getPath()));
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private void processChildResearcherList(Document doc) {
         List<SiteResearcher> siteResearcherList = getUrlChildResearcherList(doc);
         for (SiteResearcher siteResearcher : siteResearcherList) {
             siteResearcher.join();
         }
+    }
+
+    private void insertPageDataIfNecessary() {
         synchronized (pageDataStore) {
             List<PageData> pagesToInsert = pageDataStore
                     .stream()
@@ -55,8 +70,8 @@ public class SiteResearcher extends RecursiveTask<PageData> {
                 pageDataStore.removeAll(pagesToInsert);
             }
         }
-        return pageData;
     }
+
 
     private List<SiteResearcher> getUrlChildResearcherList(Document doc) {
         List<SiteResearcher> siteResearcherList = new ArrayList<>();
