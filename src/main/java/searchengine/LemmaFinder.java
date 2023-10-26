@@ -51,7 +51,7 @@ public class LemmaFinder {
         String textCleaned = removeHtmlTags(text);
         String[] fragments = textCleaned.split("<\n>");
         for(String fragment: fragments){
-            Snippet snippet = new Snippet(fragment);
+            Snippet snippet = new Snippet(fragment, lemmas);
             Matcher matcher = getMatcherRussianWord(fragment);
             while (matcher.find()){
                 String baseWord = getNormalForm(matcher.group());
