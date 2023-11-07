@@ -39,8 +39,8 @@ public class SiteResearcher extends RecursiveTask<PageData> {
         }
         pageData.setCode(doc.connection().response().statusCode());
         pageData.setContent(doc.html());
-        processChildResearcherList(doc);
-        insertPageDataIfNecessary();
+        enumerateChildList(doc);
+        insertPageData();
         return pageData;
     }
 
@@ -48,18 +48,19 @@ public class SiteResearcher extends RecursiveTask<PageData> {
         try {
             return indexingService.getDocument(siteData.getUrl().concat(pageData.getPath()));
         } catch (IOException e) {
+            log.error("An error occurred:", e);
             return null;
         }
     }
 
-    private void processChildResearcherList(Document doc) {
-        List<SiteResearcher> siteResearcherList = getUrlChildResearcherList(doc);
+    private void enumerateChildList(Document doc) {
+        List<SiteResearcher> siteResearcherList = getChildUrlList(doc);
         for (SiteResearcher siteResearcher : siteResearcherList) {
             siteResearcher.join();
         }
     }
 
-    private void insertPageDataIfNecessary() {
+    private void insertPageData() {
         synchronized (pageDataStore) {
             List<PageData> pagesToInsert = pageDataStore
                     .stream()
@@ -73,7 +74,7 @@ public class SiteResearcher extends RecursiveTask<PageData> {
     }
 
 
-    private List<SiteResearcher> getUrlChildResearcherList(Document doc) {
+    private List<SiteResearcher> getChildUrlList(Document doc) {
         List<SiteResearcher> siteResearcherList = new ArrayList<>();
         Elements elements = doc.select("a[href~=^[^#?]+$]");
         for (Element element : elements) {

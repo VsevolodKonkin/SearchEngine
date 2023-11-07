@@ -23,6 +23,7 @@ import searchengine.Snippet;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -97,7 +98,7 @@ public class SearchServiceImpl implements SearchService {
     }
 
     private Map<String, Integer> getQueryLemmas(LemmaFinder lemmaFinder, String query, List<SiteData> siteDataList) {
-        return lemmaFinder.collectLemmas(query);
+        return lemmaFinder.getLemmas(query);
     }
 
     private SearchResponse createSearchResponse(int offset, int limit) {
@@ -108,22 +109,18 @@ public class SearchServiceImpl implements SearchService {
         return response;
     }
 
-
     public List<LemmaData> getLemmasFromData(Set<String> queryLemmas, List<SiteData> siteDataList) {
-        List<LemmaData> lemmaDataList = new ArrayList<>();
-        for (String lemma : queryLemmas) {
-            for (SiteData siteData : siteDataList) {
-                if (siteData != null) {
-                    LemmaData lemmaDataEntity = lemmaRepository.findFirstByLemmaAndSite(lemma, siteData);
-                    if (lemmaDataEntity != null) {
-                        lemmaDataList.add(lemmaDataEntity);
-                        break;
-                    }
-                }
-            }
-        }
-        lemmaDataList.sort(Comparator.comparingInt(LemmaData::getFrequency));
-        return lemmaDataList;
+        return queryLemmas.stream()
+                .map(lemma -> siteDataList.stream()
+                        .filter(Objects::nonNull)
+                        .map(siteData -> lemmaRepository.findFirstByLemmaAndSite(lemma, siteData))
+                        .filter(Objects::nonNull)
+                        .findFirst()
+                        .orElse(null)
+                )
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparingInt(LemmaData::getFrequency))
+                .collect(Collectors.toList());
     }
 
     public List<PageData> getPagesFromData(List<LemmaData> lemmaDataList, List<SiteData> siteDataList) {
@@ -131,24 +128,23 @@ public class SearchServiceImpl implements SearchService {
             return new ArrayList<>();
         }
         List<PageData> pageDataList = getPagesForLemmas(lemmaDataList, siteDataList);
-        return filterPagesByLemmaData(lemmaDataList, pageDataList);
+        return getFilteredPagesByLemmaData(lemmaDataList, pageDataList);
     }
 
     private List<PageData> getPagesForLemmas(List<LemmaData> lemmaDataList, List<SiteData> siteDataList) {
         List<PageData> pageDataList = new ArrayList<>();
         for (LemmaData lemmaData : lemmaDataList) {
             String lemma = lemmaData.getLemma();
-            for (SiteData siteData : siteDataList) {
-                if (siteData != null) {
-                    List<PageData> pages = pageRepository.findAllByLemmaAndSite(lemma, siteData, PageRequest.of(0, 500));
-                    pageDataList.addAll(pages);
-                }
-            }
+            siteDataList.stream()
+                    .filter(Objects::nonNull)
+                    .map(siteData -> pageRepository.findAllByLemmaAndSite(lemma, siteData, PageRequest.of(0, 500)))
+                    .forEach(pageDataList::addAll);
         }
         return pageDataList;
     }
 
-    private List<PageData> filterPagesByLemmaData(List<LemmaData> lemmaDataList, List<PageData> pageDataList) {
+
+    private List<PageData> getFilteredPagesByLemmaData(List<LemmaData> lemmaDataList, List<PageData> pageDataList) {
         List<PageData> filteredPageDataList = new ArrayList<>();
         for (PageData pageData : pageDataList) {
             boolean existsInAllLemmas = existsInAllLemmas(lemmaDataList, pageData);
@@ -170,7 +166,7 @@ public class SearchServiceImpl implements SearchService {
 
 
     public void fillPagesInfo(List<LemmaData> lemmaDataDataList, List<PageData> pageDataDataList) {
-        pageInfoItems.clear();
+        Set<PageInfoItem> uniquePageInfoItems = new HashSet<>();
         for (PageData pageData : pageDataDataList) {
             float absRelevance = 0;
             for (LemmaData lemmaData : lemmaDataDataList) {
@@ -179,8 +175,10 @@ public class SearchServiceImpl implements SearchService {
             PageInfoItem pageInfoItem = new PageInfoItem();
             pageInfoItem.setPageData(pageData);
             pageInfoItem.setRelevance(absRelevance);
-            pageInfoItems.add(pageInfoItem);
+            uniquePageInfoItems.add(pageInfoItem);
         }
+        pageInfoItems.clear();
+        pageInfoItems.addAll(uniquePageInfoItems);
         if (!pageInfoItems.isEmpty()) {
             pageInfoItems.sort(Comparator.comparing(PageInfoItem::getRelevance).reversed());
             float maxAbsRelevance = (float) pageInfoItems.get(0).getRelevance();

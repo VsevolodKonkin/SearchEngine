@@ -208,7 +208,7 @@ public class IndexingServiceImpl implements IndexingService {
     private HashMap<String, Integer> getLemmasMap(String content) {
         HashMap<String, Integer> lemmasMap = null;
         try {
-            lemmasMap = LemmaFinder.getInstance().collectLemmas(content);
+            lemmasMap = LemmaFinder.getInstance().getLemmas(content);
         } catch (IOException e) {
             log.error("An error occurred:", e);
         }
@@ -222,7 +222,8 @@ public class IndexingServiceImpl implements IndexingService {
                 .orElse(null);
     }
 
-    private void saveData(List<PageData> pageDataList, List<LemmaData> lemmasToInsert, List<IndexData> indexesToInsert, SiteData siteData) {
+    private void saveData(List<PageData> pageDataList, List<LemmaData> lemmasToInsert,
+                          List<IndexData> indexesToInsert, SiteData siteData) {
         pageRepository.saveAll(pageDataList);
         lemmaRepository.saveAll(lemmasToInsert);
         indexRepository.saveAll(indexesToInsert);
@@ -234,12 +235,12 @@ public class IndexingServiceImpl implements IndexingService {
         if (url == null || siteUrl == null) {
             return "";
         }
-        String urlWoWWW = url.replaceFirst("//www.", "//");
-        String siteUrlWoWWW = siteUrl.replaceFirst("//www.", "//");
-        if (!urlWoWWW.startsWith(siteUrlWoWWW)) {
+        String urlWWW = url.replaceFirst("//www.", "//");
+        String siteUrlWWW = siteUrl.replaceFirst("//www.", "//");
+        if (!urlWWW.startsWith(siteUrlWWW)) {
             return "";
         }
-        String relativeUrl = urlWoWWW.substring(siteUrlWoWWW.length());
+        String relativeUrl = urlWWW.substring(siteUrlWWW.length());
         if (!relativeUrl.startsWith("/")) {
             relativeUrl = "/".concat(relativeUrl);
         }

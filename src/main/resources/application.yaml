@@ -4,8 +4,8 @@ indexing-settings:
       name: PlayBack.Ru
     - url: https://volochek.life/
       name: Volochek.life
-    - url: https://skillbox.ru/
-      name: Skillbox.ru
+#    - url: https://skillbox.ru/
+#      name: Skillbox.ru
 #    - url: http://radiomv.ru/
 #      name: Radimov.ru
 #    - url:  https://ipfran.ru/

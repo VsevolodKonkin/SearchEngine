@@ -21,7 +21,7 @@ public class LemmaFinder {
         this.luceneMorphology = luceneMorphology;
     }
 
-    public HashMap<String, Integer> collectLemmas(String text) {
+    public HashMap<String, Integer> getLemmas(String text) {
         HashMap<String, Integer> wordsMap = new HashMap<>();
         String textCleaned = removeHtmlTags(text);
         Matcher matcher = getMatcherRussianWord(textCleaned);
@@ -50,7 +50,7 @@ public class LemmaFinder {
         List<Snippet> snippetList = new ArrayList<>();
         String textCleaned = removeHtmlTags(text);
         String[] fragments = textCleaned.split("<\n>");
-        for(String fragment: fragments){
+        for (String fragment: fragments) {
             Snippet snippet = new Snippet(fragment, lemmas);
             Matcher matcher = getMatcherRussianWord(fragment);
             while (matcher.find()){

@@ -51,7 +51,9 @@ public class StatisticsServiceImpl implements StatisticsService {
             DetailedStatisticsItem detailedStatisticsItem = new DetailedStatisticsItem();
             String url = site.getUrl();
             SiteData siteData = getSiteModel(url, site.getName());
-            if (url.endsWith("/")) url = url.substring(0, url.length() - 1);
+            if (url.endsWith("/")) {
+                url = url.substring(0, url.length() - 1);
+            }
             detailedStatisticsItem.setUrl(url);
             detailedStatisticsItem.setPages(pageRepository.getPagesCountById(siteData.getId()));
             detailedStatisticsItem.setLemmas(lemmaRepository.getLemmasCountById(siteData.getId()));
@@ -65,7 +67,9 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
     private SiteData getSiteModel(String url, String name) {
-        if (url.endsWith("/")) url = url.substring(0, url.length() - 1);
+        if (url.endsWith("/")) {
+            url = url.substring(0, url.length() - 1);
+        }
         SiteData siteData = siteRepository.findFirstByUrl(url);
         if (siteData == null) {
             siteData = new SiteData();
